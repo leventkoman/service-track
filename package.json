@@ -1,0 +1,41 @@
+{
+  "name": "service-track",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm:dev:web\" \"npm:dev:api\"",
+    "dev:web": "npm run dev --workspace=web",
+    "deb:api": "npm run dev --workspaces=api",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leventkoman/service-track.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/leventkoman/service-track/issues"
+  },
+  "homepage": "https://github.com/leventkoman/service-track#readme",
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "dayjs": "^1.11.19",
+    "express": "^5.2.1",
+    "typescript": "^5.9.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}

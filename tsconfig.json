@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+//    "types": ["vuetify"],
+    "typeRoots": [
+      "./api/src/types", 
+      "./node_modules/@types"
+    ],
+    "types": ["node", "express"],
+    "module": "commonjs",
+    "lib": ["es2020"],
+    "outDir": "./dist",
+    "rootDir": ".",
+    "baseUrl": "./",
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": true,
+  },
+  "include": [
+    "api/**/*",
+    "src/**/*",
+//    "shared/models/dto/return-role.dto.ts",
+//    "shared/models/dto/role-create.dto.ts",
+  ]
+}
