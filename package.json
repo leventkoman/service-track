@@ -12,7 +12,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npm:dev:web\" \"npm:dev:api\"",
     "dev:web": "npm run dev --workspace=web",
-    "deb:api": "npm run dev --workspaces=api",
+    "dev:api": "npm run dev --workspace=api",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },
@@ -31,8 +31,6 @@
   "dependencies": {
     "concurrently": "^9.2.1",
     "dayjs": "^1.11.19",
-    "express": "^5.2.1",
-    "typescript": "^5.9.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

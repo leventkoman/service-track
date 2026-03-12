@@ -4,6 +4,8 @@ import { users} from "../db/schema";
 import {and, eq} from "drizzle-orm";
 import {StatusCodes} from "../enums/status-codes.enum";
 import {comparePassword, generateToken, userProfileFields} from "../helpers/utils";
+import {User} from "@sts/models/user";
+import {LoginResponse} from "@sts/models/login-response";
 
 export class AuthController {
     static async login(req: Request, res: Response, next: NextFunction) {
@@ -24,7 +26,11 @@ export class AuthController {
                 with: {
                     userProfile: {
                         columns: {
-                            ...userProfileFields()
+                            fullName: true,
+                            address: true,
+                            title: true,
+                            avatar: true,
+                            description: true,
                         },
                     },
                     userRoles: {
@@ -43,24 +49,25 @@ export class AuthController {
             });
             
             if (!user || !user.passwordHash) {
-                return res.status(StatusCodes.NOT_FOUND).json({message: "User not found"});
+                return res.status(StatusCodes.NOT_FOUND).json({message: "Kayıtlı kullanıcı bulunamadı."});
             }
 
             const match = await comparePassword(password, user.passwordHash);
             if (!match) return res.status(StatusCodes.BAD_REQUEST).json({message: "Invalid phone or password. Please try again."});
             
             const { passwordHash, userProfile, employeeProfile, userRoles, ...safeUser } = user
-            const response = {
+            const userMap: User = {
                 ...safeUser,
-                ...userProfile,
-                roles: userRoles.map(ur => ur.role?.name)
+                fullName: userProfile?.fullName,
+                roles: userRoles.map(ur => ur.role?.name),
+                serviceProviderId: employeeProfile?.serviceProviderId ?? null
             }
 
             const payload = {
-                userId: response.id,
-                phone: response.phone,
-                email: response.email,
-                roles: response.roles,
+                userId: userMap.id,
+                phone: userMap.phone,
+                email: userMap.email,
+                roles: userMap.roles,
                 serviceProviderId: user.employeeProfile?.serviceProviderId ?? null,
             }
             const token = generateToken(payload);
@@ -69,9 +76,9 @@ export class AuthController {
                 sameSite: 'lax',
                 secure: false,
                 maxAge: 24 * 60 * 60 * 1000 // 1 day
-            })
+            });
 
-            return res.status(StatusCodes.OK).json({user: response, token});
+            return res.status(StatusCodes.OK).json({user: userMap, token} as LoginResponse);
         } catch (e) {
             return res.status(StatusCodes.BAD_REQUEST).json({message: e});
         }

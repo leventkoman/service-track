@@ -11,7 +11,6 @@
     "lib": ["es2020"],
     "outDir": "./dist",
     "rootDir": ".",
-    "baseUrl": "./",
     "strict": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -32,11 +31,27 @@
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
     "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "@stf/components/common/*": ["web/src/components/common/*"],
+      "@stf/components/layout/*": ["web/src/components/layout/*"],
+      "@stf/features/*": ["web/src/features/*"],
+      "@stf/hooks/*": ["web/src/hooks/*"],
+      "@stf/lib/*": ["web/src/lib/*"],
+      "@stf/models/*": ["web/src/models/*"],
+      "@stf/pages/*": ["web/src/pages/*"],
+      "@stf/store/*": ["web/src/store/*"],
+      "@stf/utils/*": ["web/src/utils/*"],
+      "@sts/schemas/*": ["shared/schemas/*"],
+      "@sts/models/*": ["shared/models/*"],
+      "@stb/controllers/*": ["api/src/controllers/*"],
+      "@stb/services/*": ["api/src/services/*"]
+    }
   },
   "include": [
     "api/**/*",
     "src/**/*",
-//    "shared/models/dto/return-role.dto.ts",
-//    "shared/models/dto/role-create.dto.ts",
+    "shared/**/*",
+    "web/**/*"
   ]
 }

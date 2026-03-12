@@ -1,0 +1,43 @@
+import {createBrowserRouter, Navigate} from "react-router";
+import AuthLayout from "../compnents/layout/AuthLayout.tsx";
+import React, { Suspense} from "react";
+import {TextSkeleton} from "../compnents/common/skletons/TextSkeleton.tsx";
+import MainLayout from "../compnents/layout/MainLayout.tsx";
+import {DashboardPage, LoginPage} from "../pages";
+
+const withSuspense = (Component: React.LazyExoticComponent<any>, fallback?: React.ReactNode) => (
+    <Suspense fallback={fallback}> 
+        <Component/>
+    </Suspense>
+)
+
+export const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <Navigate to='/auth/login' replace/>
+    },
+    {
+        path: '/auth',
+        element: <AuthLayout/>,
+        children: [
+            {
+                index: true,
+                element: <Navigate to='/auth/login' replace/>
+            },
+            {
+                path: 'login',
+                element: (withSuspense(LoginPage))
+            }
+        ]
+    },
+    {
+        path: '/dashboard',
+        element: <MainLayout/>,
+        children: [
+            {
+                index: true,
+                element: (withSuspense(DashboardPage, <TextSkeleton/>))
+            }
+        ]
+    }
+])

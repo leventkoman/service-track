@@ -1,1 +1,34 @@
 @import "tailwindcss";
+
+@import "material-symbols/outlined.css";
+@import "material-symbols/rounded.css";
+@import "material-symbols/sharp.css";
+
+:root {
+    --color-primary: #135bec;
+    --color-background-light: #f6f6f8;
+    --color-background-dark: #101622;
+    --color-surface-light: #ffffff;
+    --color-surface-dark: #1a202c;
+    --color-text-main-light:#0d121b;
+    --color-text-main-dark:#e2e8f0;
+    --color-text-secondary-light: #4c669a;
+    --color-text-secondary-dark: #94a3b8;
+    --color-border-light: #e7ebf3;
+    --color-border-dark: #2d3748;
+}
+
+@theme {
+    --color-primary: var(--color-primary);
+    --color-bg-main: var(--color-background-light);
+    --color-bg-hi: var(--color-background-light);
+    --color-surface: var(--color-surface-light);
+    --color-text-main: var(--color-text-main-light);
+    --color-text-secondary: var(--color-text-secondary-light);
+    --color-border: var(--color-border-light);
+}
+@layer utilities {
+    .bg-primary {
+        background-color: var(--color-primary);
+    }
+}

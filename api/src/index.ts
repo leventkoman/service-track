@@ -1,5 +1,6 @@
 import express from "express";
 import 'dotenv/config';
+import cors from 'cors';
 import authRoute from "./routes/auth.route";
 import userRoute from "./routes/user.route";
 import {setupSwagger} from "./swagger";
@@ -12,6 +13,11 @@ import serviceRequestStatusRoute from "./routes/service-request-status.route";
 
 const app = express();
 const port = process.env.PORT || 8080;
+
+app.use(cors({
+    credentials: true,
+    origin: 'http://localhost:5173',
+}));
 app.use(express.json());
 
 app.use(cookieParser());
