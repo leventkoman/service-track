@@ -34,22 +34,26 @@ export default function MainLayout() {
     //         handleDrawerClose()
     //     }
     // }
-    
+
     return (
         <Box sx={{display: 'flex'}}>
-            <HeaderLayout 
-                drawerWidth={drawerWidth} 
+            <HeaderLayout
+                drawerWidth={drawerWidth}
                 onDrawerToggle={handleDrawerToggle}
             />
-            <SidebarLayout 
-                drawerWidth={drawerWidth} 
-                isMobileOpen={mobileOpen} 
-                onHandleDrawerTransitionEnd={handleDrawerTransitionEnd} 
+            <SidebarLayout
+                drawerWidth={drawerWidth}
+                isMobileOpen={mobileOpen}
+                onHandleDrawerTransitionEnd={handleDrawerTransitionEnd}
                 onHandleDrawerClose={handleDrawerClose}
             />
             <Box
                 component="main"
-                sx={{flexGrow: 1, p: 3, width: {sm: `calc(100% - ${drawerWidth}px)`}}}
+                className={'bg-[#f9fafb] h-screen'}
+                sx={{
+                    flexGrow: 1, p: 3, 
+                    width: {sm: `calc(100% - ${drawerWidth}px)`}, 
+                    overflowX: 'hidden'}}
             >
                 <Toolbar/>
                 <Container maxWidth="xl">

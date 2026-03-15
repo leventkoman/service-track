@@ -44,6 +44,8 @@
       "@stf/utils/*": ["web/src/utils/*"],
       "@sts/schemas/*": ["shared/schemas/*"],
       "@sts/models/*": ["shared/models/*"],
+      "@sts/types/*": ["shared/types/*"],
+      "@sts/enums/*": ["shared/enums/*"],
       "@stb/controllers/*": ["api/src/controllers/*"],
       "@stb/services/*": ["api/src/services/*"]
     }

@@ -3,7 +3,8 @@ import AuthLayout from "../compnents/layout/AuthLayout.tsx";
 import React, { Suspense} from "react";
 import {TextSkeleton} from "../compnents/common/skletons/TextSkeleton.tsx";
 import MainLayout from "../compnents/layout/MainLayout.tsx";
-import {DashboardPage, LoginPage} from "../pages";
+import {CustomerPage, DashboardPage, LoginPage, ServiceProviderPage} from "../pages";
+import TableSkeleton from "../compnents/common/skletons/TableSkeleton";
 
 const withSuspense = (Component: React.LazyExoticComponent<any>, fallback?: React.ReactNode) => (
     <Suspense fallback={fallback}> 
@@ -31,12 +32,19 @@ export const router = createBrowserRouter([
         ]
     },
     {
-        path: '/dashboard',
         element: <MainLayout/>,
         children: [
             {
-                index: true,
+                path: '/dashboard',
                 element: (withSuspense(DashboardPage, <TextSkeleton/>))
+            },
+            {
+                path: '/service-providers',
+                element: (withSuspense(ServiceProviderPage, <TableSkeleton/>))
+            },
+            {
+                path: '/customers',
+                element: (withSuspense(CustomerPage, <TableSkeleton/>))
             }
         ]
     }

@@ -1,18 +1,16 @@
-import {Request, response, Response} from "express";
+import {Request, Response} from "express";
 import {StatusCodes} from "../enums/status-codes.enum";
 import {db} from "../db";
 import {and, eq, exists, sql} from "drizzle-orm";
 import {
     customers,
     roles,
-    serviceProviderCustomers, serviceProviders,
+    serviceProviderCustomers,
     userProfiles,
     userRoles,
     users
 } from "../db/schema";
 import {roleMatch, userProfileFields} from "../helpers/utils";
-import e from "cors";
-import {CustomerType} from "../enums/customer-type.enum";
 import {Role} from "../enums/role.enum";
 
 export class CustomerController {

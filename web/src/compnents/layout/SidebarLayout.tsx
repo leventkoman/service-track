@@ -7,9 +7,9 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import ListItemText from "@mui/material/ListItemText";
+import {Business, Diversity3} from "@mui/icons-material";
+import {Link, useLocation} from "react-router";
 
 interface SidebarLayoutProps {
     drawerWidth: number;
@@ -18,6 +18,11 @@ interface SidebarLayoutProps {
     onHandleDrawerClose: () => void;
 }
 export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawerClose, onHandleDrawerTransitionEnd}: SidebarLayoutProps) {
+    const menuItems = [
+        {text: 'Firmalar', icon: <Business />, path: '/service-providers'},
+        {text: 'Müşteriler', icon: <Diversity3 />, path: '/customers'},
+    ];
+    const location = useLocation();
     const drawer = (
         <div>
             <Toolbar sx={{py: 1}}>
@@ -36,31 +41,24 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
                 </Typography>
             </Toolbar>
             <Divider/>
+            {/*<Divider/>*/}
             <List>
-                {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-                    <ListItem key={text} disablePadding>
+                {menuItems.map((item) => (
+                    <ListItem key={item.path} disablePadding>
                         <ListItemButton
-                            
+                            component={Link}
+                            to={item.path}
+                            selected={location.pathname === item.path}
+                            sx={{
+                                "&.Mui-selected": {
+                                    backgroundColor: "#e3f2fd",
+                                },
+                            }}
                         >
-                            <ListItemIcon>
-                                {index % 2 === 0 ? <InboxIcon/> : <MailIcon/>}
+                            <ListItemIcon sx={{ mr: -2 }}>
+                                {item.icon}
                             </ListItemIcon>
-                            <ListItemText primary={text}/>
-                        </ListItemButton>
-                    </ListItem>
-                ))}
-            </List>
-            <Divider/>
-            <List>
-                {['All mail', 'Trash', 'Spam'].map((text, index) => (
-                    <ListItem key={text} disablePadding>
-                        <ListItemButton
-                           
-                        >
-                            <ListItemIcon>
-                                {index % 2 === 0 ? <InboxIcon/> : <MailIcon/>}
-                            </ListItemIcon>
-                            <ListItemText primary={text}/>
+                            <ListItemText primary={item.text} />
                         </ListItemButton>
                     </ListItem>
                 ))}

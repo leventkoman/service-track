@@ -4,8 +4,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import React, {useState} from "react";
-import Divider from "@mui/material/Divider";
-import {Logout, Person, PersonAdd, Settings} from "@mui/icons-material";
+import {Logout, Person, Settings} from "@mui/icons-material";
 import ListItemIcon from "@mui/material/ListItemIcon";
 
 interface HeaderLayoutProps {
@@ -52,7 +51,7 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
                         aria-haspopup="true"
                         aria-expanded={open ? 'true' : undefined}
                     >
-                        <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+                        <Avatar sx={{ width: 32, height: 32 }}><Person/></Avatar>
                     </IconButton>
                 </Box>
                 <Menu
@@ -68,26 +67,26 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
                         <ListItemIcon>
                             <Person fontSize="small" />
                         </ListItemIcon>
-                        Add another account
+                        Hesabım
                     </MenuItem>
-                    <Divider />
-                    <MenuItem onClick={handleClose}>
-                        <ListItemIcon>
-                            <PersonAdd fontSize="small" />
-                        </ListItemIcon>
-                        Add another account
-                    </MenuItem>
+                    {/*<Divider />*/}
+                    {/*<MenuItem onClick={handleClose}>*/}
+                    {/*    <ListItemIcon>*/}
+                    {/*        <PersonAdd fontSize="small" />*/}
+                    {/*    </ListItemIcon>*/}
+                    {/*    Add another account*/}
+                    {/*</MenuItem>*/}
                     <MenuItem onClick={handleClose}>
                         <ListItemIcon>
                             <Settings fontSize="small" />
                         </ListItemIcon>
-                        Settings
+                        Ayarlar
                     </MenuItem>
                     <MenuItem onClick={handleClose}>
                         <ListItemIcon>
                             <Logout fontSize="small" />
                         </ListItemIcon>
-                        Logout
+                        Çıkış yap
                     </MenuItem>
                 </Menu>
             </Toolbar>

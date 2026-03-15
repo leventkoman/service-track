@@ -1,7 +1,6 @@
 import {Skeleton} from "@mui/material";
 
 export function TextSkeleton() {
-    console.log("here")
     const isEven = (index: number) => {
         return index % 2 === 0;
     }

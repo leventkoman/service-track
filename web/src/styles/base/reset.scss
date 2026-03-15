@@ -3,3 +3,10 @@
   margin: 0;
   padding: 0;
 }
+
+.MuiDataGrid-cell:focus,
+.MuiDataGrid-cell:focus-within,
+.MuiDataGrid-columnHeader:focus-within
+{
+  outline: none !important;
+}
