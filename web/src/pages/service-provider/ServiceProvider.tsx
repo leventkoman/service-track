@@ -39,9 +39,9 @@ export default function ServiceProviderPage() {
     }, [])
     const columns: GridColDef[] = [
         {field: 'companyName', headerName: 'Firma Adı', flex: 1, resizable: false, minWidth: 200},
+        {field: 'taxNumber', headerName: 'Vergi Numarası', flex: 1, resizable: false, minWidth: 200},
         {field: 'phone', headerName: 'Telefon', flex: 1, resizable: false, minWidth: 200},
         {field: 'email', headerName: 'Email', flex: 1, resizable: false, minWidth: 200},
-        {field: 'taxNumber', headerName: 'Vergi Numarası', flex: 1, resizable: false, minWidth: 200},
         {
             field: 'createdBy', headerName: 'Oluşturan', flex: 1, resizable: false, minWidth: 200,
             valueGetter: (_, row: ServiceProviderList) => `${row.createdBy.fullName || ''}`,
@@ -89,7 +89,7 @@ export default function ServiceProviderPage() {
         )
     }, [search, data])
 
-    const paginationModel = {page: 0, pageSize: 5};
+    const paginationModel = {page: 0, pageSize: 10};
 
     return (
         <div>

@@ -1,17 +1,17 @@
 import {useEffect, useMemo, useState} from "react";
-import {CustomerService} from "@stf/features/customers/services/customer.service";
-import {type Customer} from "@sts/models/customer-response";
+import {useNavigate} from "react-router";
 import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 import ActionMenu from "../../compnents/common/ActionMenu";
 import {Add, Delete, Edit} from "@mui/icons-material";
 import {Box, Button, Paper, Typography} from "@mui/material";
 import SearchTextField from "../../compnents/common/SearchTextField";
-import {useNavigate} from "react-router";
-import {convertCustomerType, getCompanyName} from "@stf/lib/utils";
+import {UserService} from "@stf/features/users/services/user.service";
+import type {UserProfile} from "@sts/models/user-profile";
+import {getRoles} from "@stf/lib/utils";
 
-export default function CustomerPage() {
+export default function UserPage() {
     const [loading, setLoading] = useState<boolean>(false);
-    const [data, setData] = useState<Customer[]>([]);
+    const [data, setData] = useState<UserProfile[]>([]);
     const [search, setSearch] = useState("");
     const navigate = useNavigate();
 
@@ -25,7 +25,7 @@ export default function CustomerPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await CustomerService.getCustomers();
+            const response = await UserService.getAllUsers();
             setData(response.data);
             if (response.status === 200) {
                 setLoading(false);
@@ -43,28 +43,14 @@ export default function CustomerPage() {
     const columns: GridColDef[] = [
         {field: 'fullName', headerName: 'Ad soyad', flex: 1, resizable: false, minWidth: 200},
         {
-            field: 'customerType', headerName: 'Müşteri Tipi', flex: 1, resizable: false, minWidth: 200,
-            valueGetter: (_, row: Customer) => convertCustomerType(row.customerType),
-            renderCell: (params) => (
-                <div>
-                    {convertCustomerType(params.row.customerType)}
-                </div>
-            )
-        },
-        {
-            field: 'serviceProviders', headerName: 'Kayıtlı firma ', flex: 1, resizable: false, minWidth: 200,
-            valueGetter: (_, row: Customer) => getCompanyName(row.serviceProviders),
-            renderCell: (params) => (
-                <div>
-                    {params.value.split(', ').map((name: string, index: number) => (
-                        <div key={index}>{name}</div>
-                    ))}
-                </div>
-            ),
+            field: 'roles', headerName: 'Roller', flex: 1, resizable: false, minWidth: 200,
+            valueGetter: (_, row: UserProfile) => getRoles(row.roles),
         },
         {field: 'phone', headerName: 'Telefon', flex: 1, resizable: false, minWidth: 200},
         {field: 'email', headerName: 'Email', flex: 1, resizable: false, minWidth: 200},
         {field: 'address', headerName: 'Adres', flex: 1, resizable: false, minWidth: 200},
+        {field: 'title', headerName: 'Unvan', flex: 1, resizable: false, minWidth: 200},
+        {field: 'description', headerName: 'Açıklama', flex: 1, resizable: false, minWidth: 200},
         {
             field: 'actions',
             headerName: '',
@@ -80,7 +66,7 @@ export default function CustomerPage() {
                         {
                             label: 'Düzenle',
                             icon: <Edit fontSize="small"/>,
-                            onClick: (row) => navigate(`/customers/${row.id}/edit`),
+                            onClick: (row) => navigate(`/users/${row.id}/edit`),
                         },
                         {
                             label: 'Sil',
@@ -97,13 +83,14 @@ export default function CustomerPage() {
     const filteredData = useMemo(() => {
         if (!search.trim()) return data || [];
 
-        return data.filter((row: Customer) =>
-            row?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-            row?.phone?.toLowerCase().includes(search.toLowerCase()) ||
-            row?.email?.toLowerCase().includes(search.toLowerCase()) ||
-            convertCustomerType(row.customerType)?.toLowerCase().includes(search.toLowerCase()) ||
-            row?.address?.toLowerCase().includes(search.toLowerCase()) ||
-            row?.serviceProviders && getCompanyName(row.serviceProviders).toLowerCase().includes(search.toLowerCase())
+        return data.filter((row: UserProfile) =>
+                row?.fullName?.toLowerCase().trim().includes(search.toLowerCase()) ||
+                row?.phone?.toLowerCase().trim().includes(search.toLowerCase()) ||
+                row?.email?.toLowerCase().trim().includes(search.toLowerCase()) ||
+                row?.address?.toLowerCase().trim().includes(search.toLowerCase()) ||
+                row?.title?.toLowerCase().trim().includes(search.toLowerCase()) ||
+                row?.description?.toLowerCase().trim().includes(search.toLowerCase()) ||
+                row?.roles && getRoles(row.roles).toLowerCase().trim().includes(search.toLowerCase())
         )
     }, [search, data])
 
@@ -112,7 +99,7 @@ export default function CustomerPage() {
     return (
         <div>
             <Typography variant="h5" fontWeight="bold" color="textPrimary" sx={{py: {sm: 3, xs: 2, xl: 3}}}>
-                Müşteriler
+                Kullanıcılar
             </Typography>
             <Paper sx={{height: 'auto', width: "auto"}}>
                 <Box sx={{
@@ -124,7 +111,7 @@ export default function CustomerPage() {
                     px: 1
                 }}>
                     <SearchTextField value={search} onChange={setSearch}/>
-                    <Button startIcon={<Add/>} variant="contained">Müşteri oluştur</Button>
+                    <Button startIcon={<Add/>} variant="contained">Kullanıcı oluştur</Button>
                 </Box>
                 <DataGrid
                     rows={filteredData}

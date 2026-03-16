@@ -4,8 +4,8 @@ import { users} from "../db/schema";
 import {and, eq} from "drizzle-orm";
 import {StatusCodes} from "../enums/status-codes.enum";
 import {comparePassword, generateToken, userProfileFields} from "../helpers/utils";
-import {User} from "@sts/models/user";
-import {LoginResponse} from "@sts/models/login-response";
+import type {LoginUser} from "@sts/models/login-user";
+import type {LoginResponse} from "@sts/models/login-response";
 
 export class AuthController {
     static async login(req: Request, res: Response, next: NextFunction) {
@@ -56,7 +56,7 @@ export class AuthController {
             if (!match) return res.status(StatusCodes.BAD_REQUEST).json({message: "Invalid phone or password. Please try again."});
             
             const { passwordHash, userProfile, employeeProfile, userRoles, ...safeUser } = user
-            const userMap: User = {
+            const userMap: LoginUser = {
                 ...safeUser,
                 fullName: userProfile?.fullName,
                 roles: userRoles.map(ur => ur.role?.name),

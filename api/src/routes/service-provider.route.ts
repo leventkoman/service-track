@@ -6,7 +6,7 @@ import {Role} from "../enums/role.enum";
 
 const router = Router();
 
-router.get('/', authorize(Role.SUPER_ADMIN), ServiceProviderController.getAll);
+router.get('/', authorize(Role.SUPER_ADMIN, Role.ADMIN, Role.EMPLOYEE), ServiceProviderController.getAll);
 router.post('/', authorize(Role.ADMIN), ServiceProviderController.createServiceProvider);
 router.get('/:id', ServiceProviderController.getById);
 router.delete('/:id', authorize(Role.ADMIN), ServiceProviderController.deleteServiceProvider);

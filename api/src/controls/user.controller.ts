@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from "express";
 import {db} from "../db";
-import {employeeProfiles, serviceProviders, userProfiles, userRoles, users} from "../db/schema";
+import {employeeProfiles, roles, serviceProviders, userProfiles, userRoles, users} from "../db/schema";
 import {roles as roleSchema} from "../db/schema";
 import {and, eq, exists, inArray, ne, notExists, sql} from "drizzle-orm";
 import {StatusCodes} from "../enums/status-codes.enum";
@@ -18,6 +18,17 @@ export class UserController {
                     eq(users.isActive, true),
                     eq(users.isDeleted, false),
                     ne(users.id, user.userId),
+                    notExists(
+                        db.select({val: sql`1`})
+                            .from(userRoles)
+                            .innerJoin(roles, eq(userRoles.roleId, roles.id))
+                            .where(
+                                and(
+                                    eq(roles.name, Role.CUSTOMER),
+                                    eq(userRoles.userId, users.id),
+                                )
+                            )
+                    ),
                     !isSuperAdmin ?
                         exists(
                             db.select({val: sql`1`})

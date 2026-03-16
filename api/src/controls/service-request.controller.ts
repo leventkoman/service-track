@@ -22,7 +22,7 @@ export class ServiceRequestController {
             const serviceRequest = await db.query.serviceRequests.findMany({
                 where: and(
                     eq(serviceRequests.isDeleted, false),
-                    eq(serviceRequests.serviceProviderId, user.serviceProviderId!)
+                    eq(serviceRequests.serviceProviderId, user.serviceProviderId!),
                 ),
                 columns: {
                     serviceRequestStatusId: false,
@@ -56,6 +56,7 @@ export class ServiceRequestController {
                                 columns: {
                                     phone: true,
                                     email: true,
+                                    id: true,
                                 },
                                 with: {
                                     userProfile: {
@@ -71,6 +72,7 @@ export class ServiceRequestController {
                         columns: {
                             email: true,
                             phone: true,
+                            id: true
                         },
                         with: {
                             userProfile: {
@@ -90,6 +92,7 @@ export class ServiceRequestController {
                                 columns: {
                                     email: true,
                                     phone: true,
+                                    id: true
                                 },
                                 with: {
                                     userProfile: {
@@ -110,6 +113,7 @@ export class ServiceRequestController {
             const response = serviceRequest.map(({customer, user, serviceRequestEmployee, ...safeServiceRequest}) => ({
                 ...safeServiceRequest,
                 customer: {
+                    id: customer?.users?.id,
                     customerType: customer?.customerType,
                     note: customer?.note,
                     email: customer?.users?.email,
@@ -117,14 +121,16 @@ export class ServiceRequestController {
                     ...customer?.users?.userProfile
                 },
                 createdBy: {
+                    id: user?.id,
                     email: user?.email,
                     phone: user?.phone,
-                    ...customer?.users?.userProfile
+                    fullName: user?.userProfile?.fullName
                 },
-                employees: serviceRequestEmployee.map(({user, ...serviceRequestEmployee}) => ({
-                    email: user?.email,
-                    phone: user?.phone,
-                    ...user.userProfile
+                employees: serviceRequestEmployee.map(({user: demo, ...serviceRequestEmployee}) => ({
+                    id: demo?.id,
+                    email: demo?.email,
+                    phone: demo?.phone,
+                    ...demo.userProfile
                 }))
             }))
             return res.status(StatusCodes.OK).json(response)

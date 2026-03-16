@@ -11,9 +11,14 @@ export class ServiceProviderController {
     static async getAll(req: Request, res: Response, next: NextFunction) {
         try {
             const user = req.user!;
-            
+            const isSuperAdmin = roleMatch(user.roles, Role.SUPER_ADMIN);
             const spList = await db.query.serviceProviders.findMany({
-                where: eq(serviceProviders.isDeleted, false),
+                where: and(
+                    eq(serviceProviders.isDeleted, false),
+                    !isSuperAdmin ? 
+                    eq(serviceProviders.id, user.serviceProviderId!)
+                        : undefined,
+                ),
                 columns: { isDeleted: false },
                 with: {
                     createdBy: {

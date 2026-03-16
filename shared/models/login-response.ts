@@ -1,6 +1,6 @@
-import {User} from "@sts/models/user";
+import type {LoginUser} from "@sts/models/login-user";
 
 export interface LoginResponse {
     token: string;
-    user: User;
+    user: LoginUser;
 }

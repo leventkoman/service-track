@@ -21,6 +21,8 @@ export default defineConfig({
           '@stf/store': path.resolve(__dirname, 'src/store'),
           '@stf/utils': path.resolve(__dirname, 'src/utils'),
           '@sts/models': path.resolve(__dirname, '../shared/models'),
+          '@sts/enums': path.resolve(__dirname, '../shared/enums'),
+          '@sts/types': path.resolve(__dirname, '../shared/types'),
           '@sts/schemas': path.resolve(__dirname, '../shared/schemas'),
       }
     },

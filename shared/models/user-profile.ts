@@ -1,10 +1,13 @@
+import type {RoleTypes} from "@sts/types/role.types";
+
 export interface UserProfile {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
     address: string;
     avatar: string;
     description: string
-    email: string;
-    fullName: string;
-    id: string;
-    phone: string;
     title: string;
+    roles: RoleTypes[];
 }
