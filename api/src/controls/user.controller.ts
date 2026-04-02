@@ -7,6 +7,7 @@ import {StatusCodes} from "../enums/status-codes.enum";
 import {hashPassword, mapUserInformation, roleMatch, userProfileFields} from "../helpers/utils";
 import {Role} from "../enums/role.enum";
 
+// Todo: add user status active, pending, inactive, deleted, locked.
 export class UserController {
     static async getAll(req: Request, res: Response, next: NextFunction) {
         try {
@@ -15,7 +16,7 @@ export class UserController {
             
             const userList = await db.query.users.findMany({
                 where: and(
-                    eq(users.isActive, true),
+                    // eq(users.isActive, true),
                     eq(users.isDeleted, false),
                     ne(users.id, user.userId),
                     notExists(
@@ -88,27 +89,33 @@ export class UserController {
             const isAdmin = roleMatch(user.roles, Role.ADMIN);
             
             if (user.userId !== id) {
-                if (isSuperAdmin) {
-                    if (isAdmin) {
-                        const employee = await db.query.employeeProfiles.findFirst({
-                            where: and(
-                                eq(employeeProfiles.employeeId, id),
-                                eq(employeeProfiles.serviceProviderId, user.serviceProviderId!)
-                            )
-                        });
-                        if (!employee) {
-                            return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem'});
-                        }
-                    } else {
-                        return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem'});
-                    }
-                }
+                // if (isSuperAdmin) {
+                //     if (isAdmin) {
+                //         const employee = await db.query.employeeProfiles.findFirst({
+                //             where: and(
+                //                 eq(employeeProfiles.employeeId, id),
+                //                 eq(employeeProfiles.serviceProviderId, user.serviceProviderId!)
+                //             )
+                //         });
+                //         if (!employee) {
+                //             return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem'});
+                //         }
+                //     } else {
+                //         return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem'});
+                //     }
+                // }
+                const employee = await db.query.employeeProfiles.findFirst({
+                    where: and(
+                        eq(employeeProfiles.employeeId, id),
+                        eq(employeeProfiles.serviceProviderId, user.serviceProviderId!)
+                    )
+                });
             }
             
             const userDetail = await db.query.users.findMany({
                 where: and(
                     eq(users.isDeleted, false),
-                    eq(users.isActive, true),
+                    // eq(users.isActive, true),
                     eq(users.id, id),
                 ),
                 columns: {
@@ -172,7 +179,8 @@ export class UserController {
                     .values({
                         email,
                         phone,
-                        passwordHash: await hashPassword(password)
+                        passwordHash: null,
+                        isActive: false
                     }).returning();
 
                 if (!newUser) throw new Error('Kullanıcı oluşturulamadı.')
@@ -256,9 +264,10 @@ export class UserController {
             const user = req.user!;
             const requestBody = req.body;
             
-            if (user.userId !== requestBody.id) {
-                return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem.'});
-            }
+            // Todo: add role control for super admin and admin. Otherwise each users update own profile. 
+            // if (user.userId !== requestBody.id) {
+            //     return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem.'});
+            // }
             
             await db.transaction(async (trx) => {
                 const userResult = await trx.update(users).set({
@@ -284,6 +293,50 @@ export class UserController {
             });
 
             return res.status(StatusCodes.NO_CONTENT).send();
+        } catch (e: any) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e.message ?? e});
+        }
+    }
+    
+    static async getActiveStatusUsers(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = req.user!;
+            const isSuperAdmin = roleMatch(user.roles, Role.SUPER_ADMIN);
+
+            const userList = await db.query.users.findMany({
+                where: and(
+                    eq(users.isActive, true),
+                    eq(users.isDeleted, false),
+                    !isSuperAdmin ?
+                        exists(
+                            db.select({val: sql`1`})
+                                .from(employeeProfiles)
+                                .where(
+                                    and(
+                                        eq(employeeProfiles.employeeId, users.id),
+                                        eq(employeeProfiles.serviceProviderId, user.serviceProviderId!),
+                                    )
+                                )
+                        ) : undefined
+                ),
+                columns: {
+                    id: true,
+                },
+                with: {
+                    userProfile: {
+                        columns: {
+                            fullName: true,
+                        }
+                    }
+                }
+            });
+
+            const response = userList.map((user) => ({
+                id: user.id,
+                fullName: user.userProfile.fullName,
+            }))
+
+            return res.status(StatusCodes.OK).json(response);
         } catch (e: any) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e.message ?? e});
         }

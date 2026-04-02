@@ -50,13 +50,13 @@ export class ServiceRequestController {
                         columns: {
                             customerType: true,
                             note: true,
+                            id: true,
                         },
                         with: {
                             users: {
                                 columns: {
                                     phone: true,
                                     email: true,
-                                    id: true,
                                 },
                                 with: {
                                     userProfile: {
@@ -113,7 +113,7 @@ export class ServiceRequestController {
             const response = serviceRequest.map(({customer, user, serviceRequestEmployee, ...safeServiceRequest}) => ({
                 ...safeServiceRequest,
                 customer: {
-                    id: customer?.users?.id,
+                    id: customer?.id,
                     customerType: customer?.customerType,
                     note: customer?.note,
                     email: customer?.users?.email,
@@ -175,6 +175,7 @@ export class ServiceRequestController {
                         columns: {
                             customerType: true,
                             note: true,
+                            id: true,
                         },
                         with: {
                             users: {
@@ -196,6 +197,7 @@ export class ServiceRequestController {
                         columns: {
                             email: true,
                             phone: true,
+                            id: true,
                         },
                         with: {
                             userProfile: {
@@ -215,6 +217,7 @@ export class ServiceRequestController {
                                 columns: {
                                     email: true,
                                     phone: true,
+                                    id: true,
                                 },
                                 with: {
                                     userProfile: {
@@ -242,6 +245,7 @@ export class ServiceRequestController {
                     ...createdBy?.userProfile
                 },
                 customer: {
+                    id: customer?.id,
                     customerType: customer?.customerType,
                     note: customer?.note,
                     phone: customer?.users?.phone,
@@ -249,6 +253,7 @@ export class ServiceRequestController {
                     ...customer?.users?.userProfile
                 },
                 employees: serviceRequestEmployee.map(({user, ...serviceRequestEmployee}) => ({
+                    id: user?.id,
                     email: user?.email,
                     phone: user?.phone,
                     ...user.userProfile

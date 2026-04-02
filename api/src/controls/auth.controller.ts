@@ -83,4 +83,12 @@ export class AuthController {
             return res.status(StatusCodes.BAD_REQUEST).json({message: e});
         }
     }
+    static async logout(req: Request, res: Response) {
+        try {
+            res.clearCookie('accessToken');
+            return res.status(StatusCodes.OK).send();
+        } catch (e) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: 'Something went wrong, please try again later.'});
+        }
+    }
 }

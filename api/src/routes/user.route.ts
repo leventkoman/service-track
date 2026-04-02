@@ -21,6 +21,7 @@ const router = Router();
 *         description: Success
 */
 router.get('/', authorize(Role.SUPER_ADMIN, Role.ADMIN), UserController.getAll);
+router.get('/activeUsers', authorize(Role.SUPER_ADMIN, Role.ADMIN), UserController.getActiveStatusUsers);
 router.post('/', authorize(Role.SUPER_ADMIN, Role.ADMIN), UserController.createUser);
 router.get('/:id', authorize(Role.SUPER_ADMIN, Role.ADMIN, Role.EMPLOYEE), UserController.getByUserId);
 router.delete('/:id', authorize(Role.SUPER_ADMIN, Role.ADMIN), UserController.deleteUserById);

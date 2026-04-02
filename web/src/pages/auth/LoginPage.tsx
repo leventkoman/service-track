@@ -3,7 +3,7 @@ import {Controller, useForm, useWatch} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Alert, Box, Button, Card, CardContent, Container, LinearProgress, TextField, Typography} from "@mui/material";
 import {passCriteria} from "@sts/schemas/common.schema";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {authService} from "@stf/features/auth/services/auth.service";
 import PasswordField from "../../compnents/common/PasswordField";
 import {useNavigate} from "react-router";
@@ -38,6 +38,11 @@ export default function LoginPage() {
             setPending(false);
         }
     }
+    
+    useEffect(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    }, [])
 
     const password = useWatch({control, name: 'password'});
 

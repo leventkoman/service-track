@@ -8,14 +8,17 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {RouterProvider} from "react-router";
 import {router} from "./lib/router.tsx";
 import {customTheme} from "./lib/theme.ts";
+import {SnackbarProvider} from "./context/SnackbarContext";
 
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
+ 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <ThemeProvider theme={customTheme}>
                 <CssBaseline/>
-                <RouterProvider router={router}/>
+                <SnackbarProvider>
+                    <RouterProvider router={router}/>
+                </SnackbarProvider>
             </ThemeProvider>
         </LocalizationProvider>
-    </StrictMode>,
+
 )

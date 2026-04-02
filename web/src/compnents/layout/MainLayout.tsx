@@ -51,12 +51,12 @@ export default function MainLayout() {
                 component="main"
                 className={'bg-[#f9fafb] h-screen'}
                 sx={{
-                    flexGrow: 1, p: 3, 
+                    flexGrow: 1, p: 3,
                     width: {sm: `calc(100% - ${drawerWidth}px)`}, 
                     overflowX: 'hidden'}}
             >
                 <Toolbar/>
-                <Container maxWidth="xl">
+                <Container sx={{px: {xs: 0, md: 1}}} maxWidth="xl">
                     <Outlet/>
                 </Container>
             </Box>

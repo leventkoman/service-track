@@ -1,4 +1,4 @@
-import {Customer} from "@sts/models/customer-response";
+import {type Customer} from "@sts/models/customer-response";
 
 export type CustomerType = 'individual' | 'corporate';
 export type CustomerTypeForServiceRequest = Pick<Customer, "id" | "customerType" | "note" | "email" | "phone" | "fullName">

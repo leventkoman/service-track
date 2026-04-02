@@ -8,7 +8,7 @@ export interface Customer {
     description: string;
     email: string;
     fullName: string;
-    id: number;
+    id: string;
     note: string;
     phone: string;
     serviceProviders: ServiceProviderForCustomer[];

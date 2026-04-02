@@ -1,47 +1,91 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate} from "react-router";
 import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 import ActionMenu from "../../compnents/common/ActionMenu";
-import {Add, Delete, Edit} from "@mui/icons-material";
-import {Box, Button, Paper, Typography} from "@mui/material";
+import {Add, Close, Delete, Edit} from "@mui/icons-material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    Paper,
+    Typography
+} from "@mui/material";
 import SearchTextField from "../../compnents/common/SearchTextField";
 import {UserService} from "@stf/features/users/services/user.service";
 import type {UserProfile} from "@sts/models/user-profile";
 import {getRoles} from "@stf/lib/utils";
+import {useSnackbar} from "../../context/SnackbarContext";
 
 export default function UserPage() {
+    const {showSnackbar} = useSnackbar();
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<UserProfile[]>([]);
     const [search, setSearch] = useState("");
+    const [openDialog, setOpenDialog] = useState(false);
+    const [user, setUser] = useState<UserProfile | null>(null);
     const navigate = useNavigate();
+    const controllerRef = useRef<AbortController | null>(null)
 
-    const handleDelete = async (id: string) => {
-        if (!id) return;
-        // const response: AxiosResponse<string> = await serviceProviderService.deleteService(id);
-        // console.log(response);
-        // fetchData();
+    const handleDelete = async (user: UserProfile) => {
+        setOpenDialog(true);
+        setUser(user);
+    }
+    
+    const onDeleteUser = async () => {
+        if (!user?.id) return;
+        
+        setLoading(true);
+        setOpenDialog(false);
+        
+        const controller = new AbortController();
+        controllerRef.current = controller;
+        
+        try {
+            await UserService.deleteUserById(user.id, controller.signal);
+            showSnackbar(`${user?.fullName} kişisini silme işlemi başarılı.`);
+            await fetchData();
+        } catch (err: any) {
+            if (err.name === "CanceledError" || err.name === "AbortError") return ;
+            showSnackbar(err.response.data.error ?? "Müşteriler silinirken bir hata oluştu.", "error")
+        } finally {
+            setLoading(false);
+        }
     }
 
     const fetchData = async () => {
+        const controller = new AbortController();
+        controllerRef.current = controller;
+        setLoading(true);
         try {
-            setLoading(true);
-            const response = await UserService.getAllUsers();
+            const response = await UserService.getAllUsers(controller.signal);
             setData(response.data);
-            if (response.status === 200) {
-                setLoading(false);
-            }
-        } catch (e) {
+        } catch (err: any) {
+            if (err.name === "CanceledError" || err.name === "AbortError") return ;
+            showSnackbar(err.response.data.error ?? "Müşteriler silinirken bir hata oluştu.", "error")
+        } finally {
             setLoading(false);
-            console.error(e);
         }
     }
 
     useEffect(() => {
-        fetchData();
+
+        (async () => {
+            await fetchData();
+        })();
+        
+        return () => {
+            controllerRef.current?.abort();
+        }
+        
     }, []);
 
     const columns: GridColDef[] = [
         {field: 'fullName', headerName: 'Ad soyad', flex: 1, resizable: false, minWidth: 200},
+        {field: 'title', headerName: 'Unvan', flex: 1, resizable: false, minWidth: 200},
         {
             field: 'roles', headerName: 'Roller', flex: 1, resizable: false, minWidth: 200,
             valueGetter: (_, row: UserProfile) => getRoles(row.roles),
@@ -49,7 +93,6 @@ export default function UserPage() {
         {field: 'phone', headerName: 'Telefon', flex: 1, resizable: false, minWidth: 200},
         {field: 'email', headerName: 'Email', flex: 1, resizable: false, minWidth: 200},
         {field: 'address', headerName: 'Adres', flex: 1, resizable: false, minWidth: 200},
-        {field: 'title', headerName: 'Unvan', flex: 1, resizable: false, minWidth: 200},
         {field: 'description', headerName: 'Açıklama', flex: 1, resizable: false, minWidth: 200},
         {
             field: 'actions',
@@ -71,7 +114,7 @@ export default function UserPage() {
                         {
                             label: 'Sil',
                             icon: <Delete fontSize="small"/>,
-                            onClick: (row) => handleDelete(row.id),
+                            onClick: (row: UserProfile) => handleDelete(row),
                             color: 'error.main',
                         },
                     ]}
@@ -98,7 +141,11 @@ export default function UserPage() {
 
     return (
         <div>
-            <Typography variant="h5" fontWeight="bold" color="textPrimary" sx={{py: {sm: 3, xs: 2, xl: 3}}}>
+            <Typography 
+                variant="h5" 
+                fontWeight="bold" 
+                color="textPrimary" 
+                sx={{py: {sm: 3, xs: 2, xl: 3}}}>
                 Kullanıcılar
             </Typography>
             <Paper sx={{height: 'auto', width: "auto"}}>
@@ -107,11 +154,13 @@ export default function UserPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    py: {sm: 3, xs: 2, xl: 3},
-                    px: 1
+                    p: {sm: 3, xs: 2, xl: 3}
                 }}>
-                    <SearchTextField value={search} onChange={setSearch}/>
-                    <Button startIcon={<Add/>} variant="contained">Kullanıcı oluştur</Button>
+                    <SearchTextField 
+                        value={search} 
+                        onChange={setSearch}
+                    />
+                    <Button onClick={() => navigate('/users/create')} startIcon={<Add/>} variant="contained">Kullanıcı oluştur</Button>
                 </Box>
                 <DataGrid
                     rows={filteredData}
@@ -123,6 +172,30 @@ export default function UserPage() {
                     loading={loading}
                 />
             </Paper>
+
+            <Dialog open={openDialog}>
+                <DialogTitle>Kullanıcı sil</DialogTitle>
+                <IconButton
+                    aria-label="close"
+                    onClick={() => setOpenDialog(false)}
+                    sx={(theme) => ({
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: theme.palette.grey[500],
+                    })}
+                >
+                    <Close/>
+                </IconButton>
+                <DialogContent dividers>
+                    <span className="font-bold">{user?.fullName}</span> isimli kullanıcıyı sileceksiniz.<br/>
+                    Silmek istediğinize emin misiniz?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDialog(false)}>İptal</Button>
+                    <Button variant="contained" color="error" onClick={() => onDeleteUser()}>Sil</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     )
 }

@@ -22,7 +22,7 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
         {text: 'Anasayfa', icon: <Dashboard />, path: '/dashboard'},
         {text: 'Firmalar', icon: <Business />, path: '/service-providers'},
         {text: 'Müşteriler', icon: <Diversity3 />, path: '/customers'},
-        {text: 'Kullanıcılar', icon: <Group />, path: '/users'},
+        {text: 'Çalışanlar', icon: <Group />, path: '/users'}, // if role is superAdmin text should be users instead of employees
         {text: 'Service Kayıtları', icon: <Handyman />, path: '/service-requests'},
     ];
     const location = useLocation();
@@ -51,7 +51,7 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
                         <ListItemButton
                             component={Link}
                             to={item.path}
-                            selected={location.pathname === item.path}
+                            selected={location.pathname.includes(item.path)}
                             sx={{
                                 "&.Mui-selected": {
                                     backgroundColor: "#e3f2fd",
@@ -83,7 +83,7 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
                     onTransitionEnd={onHandleDrawerTransitionEnd}
                     onClose={onHandleDrawerClose}
                     sx={{
-                        display: {xs: 'block', sm: 'none'},
+                        display: {xs: 'block', md: 'none'},
                         '& .MuiDrawer-paper': {boxSizing: 'border-box', width: drawerWidth},
                     }}
                     slotProps={{

@@ -13,7 +13,10 @@ export default function SearchTextField({value, onChange, placeholder = 'Ara ...
     return (
         <TextField
             className="w-75"
-            sx={{pb: 1}} size="small"
+            sx={{
+                pb: 1
+            }}
+            size="small"
             id="outlined-basic"
             placeholder={placeholder}
             variant="outlined"
@@ -24,8 +27,8 @@ export default function SearchTextField({value, onChange, placeholder = 'Ara ...
                     endAdornment: (
                         <InputAdornment position="end">
                             {
-                                value 
-                                    ? <Close className="cursor-pointer" onClick={handleClear}/> 
+                                value
+                                    ? <Close className="cursor-pointer" onClick={handleClear}/>
                                     : <Search/>
                             }
                         </InputAdornment>

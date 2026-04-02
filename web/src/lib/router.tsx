@@ -3,8 +3,18 @@ import AuthLayout from "../compnents/layout/AuthLayout.tsx";
 import React, { Suspense} from "react";
 import {TextSkeleton} from "../compnents/common/skletons/TextSkeleton.tsx";
 import MainLayout from "../compnents/layout/MainLayout.tsx";
-import {CustomerPage, DashboardPage, LoginPage, ServiceProviderPage, ServiceRequestPage, UserPage} from "../pages";
+import {
+    CreateCustomerPage, CreateServiceRequestPage,
+    CreateUserPage,
+    CustomerPage,
+    DashboardPage,
+    LoginPage,
+    ServiceProviderPage,
+    ServiceRequestPage,
+    UserPage
+} from "../pages";
 import TableSkeleton from "../compnents/common/skletons/TableSkeleton";
+import FormSkeleton from "../compnents/common/skletons/FormSkeleton";
 
 const withSuspense = (Component: React.LazyExoticComponent<any>, fallback?: React.ReactNode) => (
     <Suspense fallback={fallback}> 
@@ -44,16 +54,40 @@ export const router = createBrowserRouter([
             },
             {
                 path: '/customers',
-                element: (withSuspense(CustomerPage, <TableSkeleton/>))
+                element: (withSuspense(CustomerPage, <TableSkeleton/>)),
+            },
+            {
+                path: '/customers/create',
+                element: (withSuspense(CreateCustomerPage, <FormSkeleton/>))
+            },
+            {
+                path: '/customers/:customerId/edit',
+                element: (withSuspense(CreateCustomerPage))
             },
             {
                 path: '/users',
                 element: (withSuspense(UserPage, <TableSkeleton/>))
             },
             {
+                path: '/users/create',
+                element: (withSuspense(CreateUserPage, <FormSkeleton/>))
+            },
+            {
+                path: '/users/:userId/edit',
+                element: (withSuspense(CreateUserPage))
+            },
+            {
                 path: '/service-requests',
                 element: (withSuspense(ServiceRequestPage, <TableSkeleton/>))
-            }
+            },
+            {
+                path: '/service-requests/create',
+                element: (withSuspense(CreateServiceRequestPage, <FormSkeleton/>))
+            },
+            {
+                path: '/service-requests/:serviceRequestId/edit',
+                element: (withSuspense(CreateServiceRequestPage))
+            },
         ]
     }
 ])

@@ -1,43 +1,87 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {CustomerService} from "@stf/features/customers/services/customer.service";
 import {type Customer} from "@sts/models/customer-response";
 import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 import ActionMenu from "../../compnents/common/ActionMenu";
-import {Add, Delete, Edit} from "@mui/icons-material";
-import {Box, Button, Paper, Typography} from "@mui/material";
+import {Add, Close, Delete, Edit} from "@mui/icons-material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    Paper,
+    Typography
+} from "@mui/material";
 import SearchTextField from "../../compnents/common/SearchTextField";
 import {useNavigate} from "react-router";
 import {convertCustomerType, getCompanyName} from "@stf/lib/utils";
+import {useSnackbar} from "../../context/SnackbarContext";
+import {CustomerTypeBadge} from "../../compnents/common/CustomerTypeBadge";
 
 export default function CustomerPage() {
+    const {showSnackbar} = useSnackbar();
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [deleteCustomer, setDeleteCustomer] = useState<Customer | null>(null);
+    const controllerRef = useRef<AbortController | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<Customer[]>([]);
     const [search, setSearch] = useState("");
     const navigate = useNavigate();
-
-    const handleDelete = async (id: string) => {
-        if (!id) return;
-        // const response: AxiosResponse<string> = await serviceProviderService.deleteService(id);
-        // console.log(response);
-        // fetchData();
+    
+    const handleDeleteDialog = (customer: Customer): void => {
+        setOpenDialog(true);
+        setDeleteCustomer(customer);
     }
 
-    const fetchData = async () => {
+    const onDelete = async () => {
+        if (!deleteCustomer?.id) return;
+        
+        const controller = new AbortController();
+        controllerRef.current = controller;
+        
+        setLoading(true);
+        setOpenDialog(false);
+        
         try {
-            setLoading(true);
-            const response = await CustomerService.getCustomers();
-            setData(response.data);
-            if (response.status === 200) {
-                setLoading(false);
-            }
-        } catch (e) {
+            await CustomerService.deleteCustomer(deleteCustomer.id, controller.signal);
+            showSnackbar(`${deleteCustomer.fullName} silme işlemi başarılı.`);
+            await fetchData();
+        } catch (err: any) {
+            if (err.name === "CanceledError" || err.name === "AbortError") return ;
+            showSnackbar(err.response.data.error ?? "Müşteriler silinirken bir hata oluştu.", "error")
+        } finally {
             setLoading(false);
-            console.error(e);
+        }
+    }
+
+    const fetchData = async (): Promise<void> => {
+        const controller = new AbortController();
+        controllerRef.current = controller;
+        setLoading(true);
+        
+        try {
+            const response = await CustomerService.getCustomers(controller.signal);
+            setData(response.data);
+        } catch (err: any) {
+            if (err.name === "CanceledError" || err.name === "AbortError") return ;
+            showSnackbar(err.response.data.error ?? "Müşteriler listesini çekerken bilinmedik bir hata oluştu", "error")
+        } finally {
+            setLoading(false);
         }
     }
 
     useEffect(() => {
-        fetchData();
+        (async () => {
+            await fetchData();
+        })();
+        
+        return () => {
+            controllerRef.current?.abort();
+        }
+        
     }, []);
 
     const columns: GridColDef[] = [
@@ -47,7 +91,7 @@ export default function CustomerPage() {
             valueGetter: (_, row: Customer) => convertCustomerType(row.customerType),
             renderCell: (params) => (
                 <div>
-                    {convertCustomerType(params.row.customerType)}
+                    <CustomerTypeBadge name={params.row.customerType} nameLocalized={convertCustomerType(params.row.customerType)}/>
                 </div>
             )
         },
@@ -85,7 +129,7 @@ export default function CustomerPage() {
                         {
                             label: 'Sil',
                             icon: <Delete fontSize="small"/>,
-                            onClick: (row) => handleDelete(row.id),
+                            onClick: (row: Customer) => handleDeleteDialog(row),
                             color: 'error.main',
                         },
                     ]}
@@ -124,9 +168,10 @@ export default function CustomerPage() {
                     px: 1
                 }}>
                     <SearchTextField value={search} onChange={setSearch}/>
-                    <Button startIcon={<Add/>} variant="contained">Müşteri oluştur</Button>
+                    <Button startIcon={<Add/>} variant="contained" onClick={() => navigate(`/customers/create`)}>Müşteri oluştur</Button>
                 </Box>
                 <DataGrid
+                    
                     rows={filteredData}
                     columns={columns}
                     initialState={{pagination: {paginationModel}}}
@@ -136,6 +181,31 @@ export default function CustomerPage() {
                     loading={loading}
                 />
             </Paper>
+            
+            
+            <Dialog open={openDialog}>
+                <DialogTitle>Müşteri sil</DialogTitle>
+                <IconButton
+                    aria-label="close"
+                    onClick={() => setOpenDialog(false)}
+                    sx={(theme) => ({
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: theme.palette.grey[500],
+                    })}
+                >
+                    <Close/>
+                </IconButton>
+                <DialogContent dividers>
+                    <span className="font-bold">{deleteCustomer?.fullName}</span> isimli müşteriyi silinecek.<br/>
+                    Silmek istediğinize emin misiniz?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDialog(false)}>İptal</Button>
+                    <Button variant="contained" color="error" onClick={() => onDelete()}>Sil</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     )
 }

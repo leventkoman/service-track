@@ -18,6 +18,25 @@ export const customTheme = createTheme({
                 },
             },
         },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 8,
+                    '& fieldset': {
+                        borderColor: '#ccc',
+                    },
+
+                    '&:hover fieldset': {
+                        borderColor: '#135bec',
+                    },
+
+                    '&.Mui-focused fieldset': {
+                        borderColor: '#135bec',
+                        borderWidth: 2,
+                    },
+                }
+            }
+        },
         MuiDataGrid: {
             defaultProps: {
                 localeText: {

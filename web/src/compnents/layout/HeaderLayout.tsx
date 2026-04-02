@@ -6,12 +6,17 @@ import IconButton from "@mui/material/IconButton";
 import React, {useState} from "react";
 import {Logout, Person, Settings} from "@mui/icons-material";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import {useSnackbar} from "../../context/SnackbarContext";
+import {authService} from "@stf/features/auth/services/auth.service";
+import {useNavigate} from "react-router";
 
 interface HeaderLayoutProps {
     drawerWidth: number;
     onDrawerToggle: () => void;
 }
 export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayoutProps) {
+    const { showSnackbar } = useSnackbar();
+    const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -20,6 +25,17 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
     const handleClose = () => {
         setAnchorEl(null);
     };
+    
+    const logout = async () => {
+        try {
+            await authService.logout();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            navigate("/auth/login");
+        } catch (err: any) {
+            showSnackbar(err.response?.data?.error ?? 'Çıkış yaparken bir hata ile karşılaşıldı.', "error")
+        }
+    }
     return (
         <AppBar
             position="fixed"
@@ -82,7 +98,7 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
                         </ListItemIcon>
                         Ayarlar
                     </MenuItem>
-                    <MenuItem onClick={handleClose}>
+                    <MenuItem onClick={() => logout()}>
                         <ListItemIcon>
                             <Logout fontSize="small" />
                         </ListItemIcon>
