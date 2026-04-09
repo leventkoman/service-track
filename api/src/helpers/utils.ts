@@ -1,7 +1,8 @@
+import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import jwt, {JwtPayload} from 'jsonwebtoken';
-import 'dotenv/config'
 import {Response} from "express";
+import crypto from "crypto";
 
 export async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
@@ -52,4 +53,17 @@ export function setAccessTokenCookie(res: Response, token: string): void {
         secure: false,
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     })
+}
+
+export function generatePasswordToken(): string {
+    return crypto.pseudoRandomBytes(32).toString('hex');
+}
+
+export function setupPasswordUrl(passwordToken: string): string {
+    return `${process.env.FRONTEND_URL}/auth/set-password?token=${passwordToken}`;
+    
+}
+
+export function set24Hours(): Date {
+    return new Date(Date.now() + 24 * 60 * 60 * 1000);
 }

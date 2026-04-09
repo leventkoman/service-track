@@ -2,12 +2,14 @@ import {relations} from "drizzle-orm";
 import {
     customers,
     employeeProfiles,
-    serviceProviders, serviceRequestEmployees,
+    serviceProviders,
+    serviceRequestEmployees,
     serviceRequests,
     userProfiles,
     userRoles,
-    users
+    users, userStatuses
 } from "../schema";
+import {verificationTokens} from "../schema/verification-tokens.schema";
 
 export const userRelations = relations(users, ({one, many}) => ({
     userProfile: one(userProfiles, {
@@ -18,6 +20,11 @@ export const userRelations = relations(users, ({one, many}) => ({
         fields: [users.id],
         references: [employeeProfiles.employeeId]
     }),
+    status: one(userStatuses, {
+        fields: [users.statusId],
+        references: [userStatuses.id]
+    }),
+    verificationTokens: many(users),
     userRoles: many(userRoles),
     customers: many(customers),
     serviceProviders: many(serviceProviders),

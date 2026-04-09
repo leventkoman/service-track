@@ -1,11 +1,28 @@
 import {NextFunction, Request, Response} from "express";
 import {db} from "../db";
-import {employeeProfiles, roles, serviceProviders, userProfiles, userRoles, users} from "../db/schema";
+import {
+    employeeProfiles,
+    roles,
+    serviceProviders,
+    userProfiles,
+    userRoles,
+    users, userStatuses,
+    verificationTokens
+} from "../db/schema";
 import {roles as roleSchema} from "../db/schema";
 import {and, eq, exists, inArray, ne, notExists, sql} from "drizzle-orm";
 import {StatusCodes} from "../enums/status-codes.enum";
-import {hashPassword, mapUserInformation, roleMatch, userProfileFields} from "../helpers/utils";
+import {
+    generatePasswordToken,
+    mapUserInformation,
+    roleMatch, set24Hours,
+    setupPasswordUrl,
+    userProfileFields
+} from "../helpers/utils";
 import {Role} from "../enums/role.enum";
+import {mailService} from "../services/mail.service";
+import {passwordSetupTemplate} from "../templates/mail.template";
+import {UserStatus} from "../enums/user-status.enum";
 
 // Todo: add user status active, pending, inactive, deleted, locked.
 export class UserController {
@@ -13,12 +30,13 @@ export class UserController {
         try {
             const user = req.user!;
             const isSuperAdmin = roleMatch(user.roles, Role.SUPER_ADMIN);
-            
+
             const userList = await db.query.users.findMany({
                 where: and(
                     // eq(users.isActive, true),
                     eq(users.isDeleted, false),
-                    ne(users.id, user.userId),
+                    isSuperAdmin ?
+                        ne(users.id, user.userId) : undefined,
                     notExists(
                         db.select({val: sql`1`})
                             .from(userRoles)
@@ -46,6 +64,7 @@ export class UserController {
                     id: true,
                     phone: true,
                     email: true,
+                    lastLoginTime: true
                 },
                 with: {
                     userProfile: {
@@ -69,6 +88,12 @@ export class UserController {
                                 }
                             }
                         }
+                    },
+                    status: {
+                        columns: {
+                            name: true,
+                            nameLocalized: true,
+                        }
                     }
                 }
             });
@@ -80,14 +105,14 @@ export class UserController {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e});
         }
     }
-    
+
     static async getByUserId(req: Request, res: Response, next: NextFunction) {
         try {
             const user = req.user!;
             const id = req.params.id as string;
             const isSuperAdmin = roleMatch(user.roles, Role.SUPER_ADMIN);
             const isAdmin = roleMatch(user.roles, Role.ADMIN);
-            
+
             if (user.userId !== id) {
                 // if (isSuperAdmin) {
                 //     if (isAdmin) {
@@ -111,7 +136,7 @@ export class UserController {
                     )
                 });
             }
-            
+
             const userDetail = await db.query.users.findMany({
                 where: and(
                     eq(users.isDeleted, false),
@@ -153,7 +178,7 @@ export class UserController {
     static async createUser(req: Request, res: Response) {
         try {
             const user = req.user!;
-            const {email, phone, password, fullName, address, title, avatar, description} = req.body;
+            const {email, phone, fullName, address, title, avatar, description} = req.body;
 
             const isExist = await db.query.users.findFirst({
                 where: eq(users.phone, phone),
@@ -163,25 +188,29 @@ export class UserController {
             });
 
             if (isExist) return res.status(StatusCodes.CONFLICT).json({error: 'Kullanıcı zaten sistemde mevcut.'});
-            
+
             const isSuperAdmin = roleMatch(user.roles, Role.SUPER_ADMIN);
             const isAdmin = roleMatch(user.roles, Role.ADMIN);
-            
+
             const roleIds = await db.query.roles.findMany({
                 where: inArray(roleSchema.name, isSuperAdmin ? ['admin', 'employee'] : ['employee']),
                 columns: {id: true}
             });
             if (!roleIds.length) return res.status(StatusCodes.BAD_REQUEST).json({error: 'Geçersiz rol.'});
+            let passwordToken = '';
+            const pendingStatus = await db.query.userStatuses.findFirst({
+                where: eq(userStatuses.name, UserStatus.PENDING),
+                columns: {id: true}
+            })
 
             await db.transaction(async (trx) => {
-                const [newUser] = await trx
-                    .insert(users)
-                    .values({
-                        email,
-                        phone,
-                        passwordHash: null,
-                        isActive: false
-                    }).returning();
+                const [newUser] = await trx.insert(users).values({
+                    email,
+                    phone,
+                    passwordHash: null,
+                    isActive: false,
+                    statusId: pendingStatus?.id
+                }).returning();
 
                 if (!newUser) throw new Error('Kullanıcı oluşturulamadı.')
 
@@ -200,16 +229,28 @@ export class UserController {
                         roleId: role.id
                     }))
                 )
-                
+
                 if (isAdmin) {
                     await trx.insert(employeeProfiles).values({
                         serviceProviderId: user.serviceProviderId!,
                         employeeId: newUser.id
                     })
                 }
-            })
 
-            return res.status(StatusCodes.CREATED).json({message: 'User has been successfully created.'});
+                const token = generatePasswordToken();
+                passwordToken = token;
+
+                await trx.insert(verificationTokens).values({
+                    token,
+                    userId: newUser.id,
+                    expiresAt: set24Hours(),
+                });
+            });
+
+            const setupUrl = setupPasswordUrl(passwordToken)
+            await mailService(email, 'Hesabınızı aktivite edin', passwordSetupTemplate(fullName, setupUrl));
+
+            return res.status(StatusCodes.CREATED).json({message: 'Kullanıcı başarılı bir şekide oluşturuldu.'});
         } catch (e: any) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e?.message ?? e});
         }
@@ -225,7 +266,7 @@ export class UserController {
             if (user.userId === id && !isAdmin) {
                 return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem.'})
             }
-            
+
             await db.transaction(async (trx) => {
                 const userResult = await trx.update(users).set({
                     isDeleted: true,
@@ -241,11 +282,11 @@ export class UserController {
                             ))
                     ) : undefined
                 ));
-                
+
                 if (userResult.rowCount === 0) {
                     throw ({status: StatusCodes.NOT_FOUND, message: 'Kullanıcı bulunamadı.'})
                 }
-                
+
                 await trx.update(userProfiles).set({
                     isDeleted: true,
                 }).where(eq(userProfiles.id, user.userId))
@@ -263,12 +304,12 @@ export class UserController {
         try {
             const user = req.user!;
             const requestBody = req.body;
-            
+
             // Todo: add role control for super admin and admin. Otherwise each users update own profile. 
             // if (user.userId !== requestBody.id) {
             //     return res.status(StatusCodes.UNAUTHORIZED).json({error: 'Yetkisiz işlem.'});
             // }
-            
+
             await db.transaction(async (trx) => {
                 const userResult = await trx.update(users).set({
                     phone: requestBody.phone,
@@ -297,7 +338,7 @@ export class UserController {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e.message ?? e});
         }
     }
-    
+
     static async getActiveStatusUsers(req: Request, res: Response, next: NextFunction) {
         try {
             const user = req.user!;
@@ -337,6 +378,33 @@ export class UserController {
             }))
 
             return res.status(StatusCodes.OK).json(response);
+        } catch (e: any) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e.message ?? e});
+        }
+    }
+    
+    static async resendPasswordMail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.params.id as string;
+            const findUser = await db.query.verificationTokens.findFirst({
+                where: eq(verificationTokens.userId, userId)
+            });
+            
+            if (!findUser) {
+                return res.status(StatusCodes.NOT_FOUND).send({error: 'Kullanıcı bulunamadı.'});
+            }
+            
+            const updateToken = await db.update(verificationTokens).set({
+                token: generatePasswordToken(),
+                userId,
+                expiresAt: set24Hours(),
+            }).where(eq(verificationTokens.userId, userId));
+            
+            if (updateToken.rowCount === 0) {
+                return res.status(StatusCodes.NOT_FOUND).json({error: 'Kullanıcı bulunamadı.'})
+            }
+            
+            return res.status(StatusCodes.OK).send();
         } catch (e: any) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e.message ?? e});
         }

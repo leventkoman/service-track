@@ -10,8 +10,10 @@ export * from './service_requests.schema';
 export * from './units.schema';
 export * from './user-profiles.schema';
 export * from './user-roles.schema';
+export * from './user-statuses.schema';
 export * from './users.schema';
 export * from './vat-rates.schema';
+export * from './verification-tokens.schema';
 export * from '../relations'
 /**
  * @swagger

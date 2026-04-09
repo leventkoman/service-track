@@ -2,7 +2,7 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate} from "react-router";
 import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 import ActionMenu from "../../compnents/common/ActionMenu";
-import {Add, Close, Delete, Edit} from "@mui/icons-material";
+import {Add, Close, Delete, Edit, Repeat} from "@mui/icons-material";
 import {
     Box,
     Button,
@@ -17,8 +17,9 @@ import {
 import SearchTextField from "../../compnents/common/SearchTextField";
 import {UserService} from "@stf/features/users/services/user.service";
 import type {UserProfile} from "@sts/models/user-profile";
-import {getRoles} from "@stf/lib/utils";
+import {formatDateTimeToDMYHM, getRoles} from "@stf/lib/utils";
 import {useSnackbar} from "../../context/SnackbarContext";
+import StatusBadge from "../../compnents/common/StatusBadge";
 
 export default function UserPage() {
     const {showSnackbar} = useSnackbar();
@@ -70,6 +71,23 @@ export default function UserPage() {
             setLoading(false);
         }
     }
+    
+    const resendEmail = async (user: UserProfile) => {
+        if (!user) return;
+        const controller = new AbortController();
+        controllerRef.current = controller;
+        setLoading(true);
+        try {
+            await UserService.resendPasswordEmail(user.id, controller.signal);
+            showSnackbar(`${user.fullName} kişisine şifre oluşturması için tekrardan mail gönderildi.`)
+        } catch (err: any) {
+            console.log(err.response)
+            if (err.name === "CanceledError" || err.name === "AbortError") return ;
+            showSnackbar(err.response.data.error ?? "Email gönderilirken bir hata oluştu.", "error")
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
 
@@ -92,8 +110,25 @@ export default function UserPage() {
         },
         {field: 'phone', headerName: 'Telefon', flex: 1, resizable: false, minWidth: 200},
         {field: 'email', headerName: 'Email', flex: 1, resizable: false, minWidth: 200},
-        {field: 'address', headerName: 'Adres', flex: 1, resizable: false, minWidth: 200},
-        {field: 'description', headerName: 'Açıklama', flex: 1, resizable: false, minWidth: 200},
+        {
+            field: 'address',
+            headerName: 'Durumu',
+            flex: 1,
+            resizable: false,
+            minWidth: 200,
+            headerAlign: "center",
+            align: "center",
+            valueGetter: (_, row: UserProfile) => `${row.status?.nameLocalized || ''}`,
+            renderCell: (params) => (
+                <div>
+                    <StatusBadge name={params.row.status?.name}
+                                 nameLocalized={params.row.status?.nameLocalized}/>
+                </div>
+            )
+        },
+        {field: 'lastLoginTime', headerName: 'Son giriş', flex: 1, resizable: false, minWidth: 200,
+            valueGetter: (_, row: UserProfile) => formatDateTimeToDMYHM(row.lastLoginTime)},
+        
         {
             field: 'actions',
             headerName: '',
@@ -106,6 +141,12 @@ export default function UserPage() {
                 <ActionMenu
                     row={params.row}
                     items={[
+                        {
+                            hidden: params.row.lastLoginTime,
+                            label: 'Mail gönder',
+                            icon: <Repeat fontSize="small"/>,
+                            onClick: (row: UserProfile) => resendEmail(row),
+                        },
                         {
                             label: 'Düzenle',
                             icon: <Edit fontSize="small"/>,
@@ -132,7 +173,7 @@ export default function UserPage() {
                 row?.email?.toLowerCase().trim().includes(search.toLowerCase()) ||
                 row?.address?.toLowerCase().trim().includes(search.toLowerCase()) ||
                 row?.title?.toLowerCase().trim().includes(search.toLowerCase()) ||
-                row?.description?.toLowerCase().trim().includes(search.toLowerCase()) ||
+                row?.lastLoginTime && formatDateTimeToDMYHM(row.lastLoginTime)?.toLowerCase().trim().includes(search.toLowerCase()) ||
                 row?.roles && getRoles(row.roles).toLowerCase().trim().includes(search.toLowerCase())
         )
     }, [search, data])

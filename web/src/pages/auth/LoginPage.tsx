@@ -79,14 +79,20 @@ export default function LoginPage() {
                             Giriş Yap
                         </Typography>
 
-                        <Typography variant="h5" textAlign="center" display="flex" alignItems="center"
-                                    justifyContent="center" fontWeight="bold">
-                            <div
-                                className="rounded-full w-16 h-16 p-3 bg-primary/10 flex items-center justify-center">
-                                <span className="material-symbols-outlined !text-3xl text-primary">handyman</span>
-                            </div>
-                        </Typography>                        
+                        {/*<Typography variant="h5" textAlign="center" display="flex" alignItems="center"*/}
+                        {/*            justifyContent="center" fontWeight="bold">*/}
+                        {/*    <div*/}
+                        {/*        className="rounded-full w-16 h-16 p-3 bg-primary/10 flex items-center justify-center">*/}
+                        {/*        <span className="material-symbols-outlined !text-3xl text-primary">handyman</span>*/}
+                        {/*    </div>*/}
+                        {/*</Typography>                        */}
 
+                        <img
+                            src="/vite.svg"
+                            alt="logo"
+                            loading="lazy"
+                        />
+                        
                         {!formState.isValid && formState.isDirty && formErrorMessages().length > 0 ?
                             <Alert sx={{display: "flex", alignItems: "center"}}
                                    severity="error">{formErrorMessages() }</Alert> : ''}

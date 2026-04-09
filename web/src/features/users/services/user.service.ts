@@ -10,4 +10,5 @@ export const UserService = {
     createUser: (body: CreateUserValues, signal?: AbortSignal) => api.post('/users', body, { signal: signal! }),
     updateUser: (body: CreateUserValues, signal?: AbortSignal) => api.put(`/users/${body.id}`, body, { signal: signal! }),
     deleteUserById: (id: string, signal?: AbortSignal) => api.delete(`/users/${id}`, { signal: signal! }),
+    resendPasswordEmail: (id: string, signal?: AbortSignal) => api.post(`/users/${id}/resendEmail`, {signal: signal!}),
 }

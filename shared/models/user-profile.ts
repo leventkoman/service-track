@@ -9,5 +9,10 @@ export interface UserProfile {
     avatar: string;
     description: string
     title: string;
+    lastLoginTime: Date | null;
     roles: RoleTypes[];
+    status: {
+        name: string;
+        nameLocalized: string;
+    }
 }

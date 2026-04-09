@@ -10,47 +10,48 @@ import {
 } from "@mui/material";
 import {ArrowBack} from "@mui/icons-material";
 import Divider from "@mui/material/Divider";
-import {Controller, useForm} from "react-hook-form";
+import {Controller, useForm, useWatch} from "react-hook-form";
 import {createCustomerSchema, type CreateCustomerValue} from "@sts/schemas/create-customer.schema";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {CustomerService} from "@stf/features/customers/services/customer.service";
 import {useSnackbar} from "../../context/SnackbarContext";
 import {useEffect, useRef, useState} from "react";
 import FormSkeleton from "../../compnents/common/skletons/FormSkeleton";
+import {CustomerType} from "@sts/enums/customer-type.enum";
 
 
 export default function CreateCustomerPage() {
     const defaultValues: CreateCustomerValue = {
         id: null,
         customerType: 'individual',
-        title: '',
         fullName: '',
         phone: '',
         email: '',
         address: '',
         note: '',
         description: '',
-        avatar: ''
+        avatar: '',
+        vatNumber: null
     }
-    const params = useParams<{customerId?: string}>();
+    const params = useParams<{ customerId?: string }>();
     const customerId = params.customerId;
     const [loading, setLoading] = useState<boolean>(false);
     const {showSnackbar} = useSnackbar();
     const navigate = useNavigate();
     const controllerRef = useRef<AbortController | null>(null);
-    const { control, handleSubmit, formState, reset } = useForm<CreateCustomerValue>({
+    const {control, handleSubmit, formState, reset} = useForm<CreateCustomerValue>({
         resolver: zodResolver(createCustomerSchema),
         defaultValues,
         mode: "onChange",
     });
-    
+
     const getCustomerDetail = async (): Promise<void> => {
         if (!customerId) return;
-        
+
         const controller = new AbortController();
         controllerRef.current = controller;
         setLoading(true);
-        
+
         try {
             const response = await CustomerService.getCustomerById(customerId, controller.signal);
             const data = response.data;
@@ -62,30 +63,38 @@ export default function CreateCustomerPage() {
             setLoading(false);
         }
     }
-    
+
+    const customerType = useWatch({control, name: 'customerType'});
+
     useEffect(() => {
         if (!customerId) return;
-        
+
         (async () => {
             await getCustomerDetail();
         })();
-        
+
         return () => {
             controllerRef.current?.abort();
         }
     }, [customerId])
-    
+
     const onSubmit = async (values: CreateCustomerValue): Promise<void> => {
         const controller = new AbortController();
         controllerRef.current = controller;
         // setLoading(true);
         try {
+            values = customerType === CustomerType.corporate
+                ? {...values}
+                : {
+                    ...values,
+                    vatNumber: null
+                }
             customerId
                 ? await CustomerService.updateCustomer(values, controller.signal)
                 : await CustomerService.createCustomer(values, controller.signal);
             showSnackbar('Müşteri başarılı bir şekilde oluşturuldu.');
         } catch (err: any) {
-            if (err.name === "CanceledError" || err.name === "AbortError") return ;
+            if (err.name === "CanceledError" || err.name === "AbortError") return;
             showSnackbar(err.response.data.error ?? "Müşteri kayıt edilirken bir şeyler ters gitti.", "error")
             console.log(err);
         } finally {
@@ -93,53 +102,54 @@ export default function CreateCustomerPage() {
             navigate("/customers");
         }
     }
-    
+
     return (
         <>
-            {loading 
-                ?  <FormSkeleton/> 
+            {loading
+                ? <FormSkeleton/>
                 :
                 <Box sx={{
                     flexWrap: 'wrap',
                     py: {sm: 3, xs: 2, xl: 3},
                     px: 0
                 }}>
-                    <Typography variant="h5" display="flex"  fontWeight="bold">
+                    <Typography variant="h5" display="flex" fontWeight="bold">
                         {customerId ? 'Müşteri düzenle' : 'Müşteri oluştur'}
                     </Typography>
                     <Box
                         sx={{
-                            flex:"wrap",
-                            display:"flex",
-                            alignItems:"center",
-                            gap:1,
-                            py:3
+                            flex: "wrap",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            py: 3
                         }}
                     >
                         <ArrowBack onClick={() => navigate('/customers')} cursor="pointer"/>
-                        <Typography variant="body1" display="flex" justifyContent="center" alignItems="center" fontWeight="bold">
+                        <Typography variant="body1" display="flex" justifyContent="center" alignItems="center"
+                                    fontWeight="bold">
                             Geri
                         </Typography>
                     </Box>
-                    <Paper 
-                        component="form" 
-                        onSubmit={handleSubmit(onSubmit)} 
+                    <Paper
+                        component="form"
+                        onSubmit={handleSubmit(onSubmit)}
                         sx={{
-                            height: 'auto', 
-                            width: "auto", 
-                            py: 4, 
-                            px: {xs: 4, lg:8}
-                    }}
+                            height: 'auto',
+                            width: "auto",
+                            py: 4,
+                            px: {xs: 4, lg: 8}
+                        }}
                     >
                         {/*Müşteri Tipi*/}
-                        <Box sx={{py:2}}>
+                        <Box sx={{py: 2}}>
                             <Controller
                                 name="customerType"
                                 control={control}
-                                render={({ field }) => (
+                                render={({field}) => (
                                     <FormControl>
                                         <FormLabel
-                                            sx={{ fontWeight: "bold", pb: 1, color: "black" }}
+                                            sx={{fontWeight: "bold", pb: 1, color: "black"}}
                                             required
                                             id="customer-type-label"
                                             focused={false}
@@ -149,16 +159,16 @@ export default function CreateCustomerPage() {
                                         <RadioGroup
                                             row
                                             aria-labelledby="customer-type-label"
-                                            {...field}  // field.value ve field.onChange bağlanıyor
+                                            {...field} // field.value ve field.onChange bağlanıyor
                                         >
-                                            <FormControlLabel value="individual" control={<Radio />} label="Bireysel" />
-                                            <FormControlLabel value="corporate" control={<Radio />} label="Kurumsal" />
+                                            <FormControlLabel value="individual" control={<Radio/>} label="Bireysel"/>
+                                            <FormControlLabel value="corporate" control={<Radio/>} label="Kurumsal"/>
                                         </RadioGroup>
                                     </FormControl>
                                 )}
                             />
                         </Box>
-                        <Divider />
+                        <Divider/>
                         <Typography
                             variant="body1"
                             fontWeight="bold"
@@ -168,32 +178,14 @@ export default function CreateCustomerPage() {
                         </Typography>
                         <Box
                             sx={{
-                                py:2,
-                                display:"flex",
-                                flexDirection: { xs: "column", lg: "row" },
-                                alignItems:"stretch",
-                                width:"100%",
-                                gap:{xs: 4, lg:8}
+                                py: 2,
+                                display: "flex",
+                                flexDirection: {xs: "column", lg: "row"},
+                                alignItems: "stretch",
+                                width: "100%",
+                                gap: {xs: 4, lg: 8}
                             }}
                         >
-                            <Controller 
-                                name="title"
-                                control={control}
-                                render={({field, fieldState}) => (
-                                    <TextField
-                                        {...field}
-                                        value={field.value ?? ''}
-                                        slotProps={{inputLabel: {required: false}}}
-                                        error={fieldState.invalid}
-                                        helperText={fieldState.error?.message}
-                                        fullWidth
-                                        id="demo-helper-text-aligned-no-helper"
-                                        label="Unvan"
-                                        placeholder="Unvan"
-                                    />           
-                                )} 
-                            />
-
                             <Controller
                                 name="fullName"
                                 control={control}
@@ -211,15 +203,36 @@ export default function CreateCustomerPage() {
                                     />
                                 )}
                             />
+
+                            {
+                                customerType === CustomerType.corporate ?
+
+                                    <Controller
+                                        name="vatNumber"
+                                        control={control}
+                                        render={({field, fieldState}) => (
+                                            <TextField
+                                                {...field}
+                                                value={field.value ?? ''}
+                                                slotProps={{inputLabel: {required: customerType === CustomerType.corporate}}}
+                                                error={fieldState.invalid}
+                                                helperText={fieldState.error?.message}
+                                                fullWidth
+                                                id="demo-helper-text-aligned-no-helper"
+                                                label="Vergi numarası"
+                                                placeholder="Vergi numarası"
+                                            />
+                                        )}
+                                    /> : ''}
                         </Box>
                         <Box
                             sx={{
-                                py:2,
-                                display:"flex",
-                                flexDirection: { xs: "column", lg: "row" },
-                                alignItems:"stretch",
-                                width:"100%",
-                                gap:{xs: 4, lg:8}
+                                py: 2,
+                                display: "flex",
+                                flexDirection: {xs: "column", lg: "row"},
+                                alignItems: "stretch",
+                                width: "100%",
+                                gap: {xs: 4, lg: 8}
                             }}
                         >
                             <Controller
@@ -257,7 +270,7 @@ export default function CreateCustomerPage() {
                                 )}
                             />
                         </Box>
-                        <Divider sx={{py:2}} />
+                        <Divider sx={{py: 2}}/>
                         <Typography
                             variant="body1"
                             fontWeight="bold"
@@ -267,8 +280,8 @@ export default function CreateCustomerPage() {
                         </Typography>
                         <Box
                             sx={{
-                                py:2,
-                                width:"100%",
+                                py: 2,
+                                width: "100%",
                             }}
                         >
                             <Controller
@@ -293,8 +306,8 @@ export default function CreateCustomerPage() {
                         </Box>
                         <Box
                             sx={{
-                                py:2,
-                                width:"100%",
+                                py: 2,
+                                width: "100%",
                             }}
                         >
                             <Controller
@@ -319,8 +332,8 @@ export default function CreateCustomerPage() {
                         </Box>
                         <Box
                             sx={{
-                                py:2,
-                                width:"100%",
+                                py: 2,
+                                width: "100%",
                             }}
                         >
                             <Controller
@@ -363,15 +376,15 @@ export default function CreateCustomerPage() {
                                 )}
                             />
                         </Box>
-                        <Divider sx={{py:2}} />
+                        <Divider sx={{py: 2}}/>
                         <Box
                             sx={{
-                                pt:4,
-                                pb:0,
-                                width:"100%",
-                                display:"flex",
-                                alignItems:"stretch",
-                                justifyContent:"flex-end",
+                                pt: 4,
+                                pb: 0,
+                                width: "100%",
+                                display: "flex",
+                                alignItems: "stretch",
+                                justifyContent: "flex-end",
                                 gap: 4
                             }}
                         >

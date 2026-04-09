@@ -16,5 +16,7 @@ export const customers = pgTable('customers', {
     userId: uuid('user_id').references(() => users.id, {
         onDelete: 'set null'
     }),
+    vatNumber: varchar('vat_number')
+        .unique(),
     ...baseAuditColumn(),
 });

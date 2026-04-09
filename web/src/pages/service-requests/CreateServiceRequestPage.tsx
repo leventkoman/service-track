@@ -100,7 +100,7 @@ export default function CreateServiceRequestPage() {
     }
     
     const getServiceProviderById = async () => {
-        if (serviceRequestId) return;
+        // if (serviceRequestId) return;
         const userJson = localStorage.getItem('user');
         if (!userJson) {
             return;

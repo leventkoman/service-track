@@ -11,5 +11,6 @@ export interface Customer {
     id: string;
     note: string;
     phone: string;
+    vatNumber: string;
     serviceProviders: ServiceProviderForCustomer[];
 }

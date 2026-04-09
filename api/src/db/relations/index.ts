@@ -10,4 +10,6 @@ export * from './units.relations';
 export * from './user.relations';
 export * from './user-profile.relations';
 export * from './user-role.relations';
+export * from './user-statuses.relation';
 export * from './vat-rates.relations';
+export * from './verification-tokens.relation';

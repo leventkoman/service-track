@@ -85,6 +85,7 @@ export default function CustomerPage() {
     }, []);
 
     const columns: GridColDef[] = [
+        {field: 'vatNumber', headerName: 'Vergi Numarası', flex: 1, resizable: false, minWidth: 200},
         {field: 'fullName', headerName: 'Ad soyad', flex: 1, resizable: false, minWidth: 200},
         {
             field: 'customerType', headerName: 'Müşteri Tipi', flex: 1, resizable: false, minWidth: 200,
@@ -142,6 +143,7 @@ export default function CustomerPage() {
         if (!search.trim()) return data || [];
 
         return data.filter((row: Customer) =>
+            row?.vatNumber?.toLowerCase().includes(search.toLowerCase()) ||
             row?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
             row?.phone?.toLowerCase().includes(search.toLowerCase()) ||
             row?.email?.toLowerCase().includes(search.toLowerCase()) ||

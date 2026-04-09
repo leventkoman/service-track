@@ -13,8 +13,9 @@
     "dev": "concurrently \"npm:dev:web\" \"npm:dev:api\"",
     "dev:web": "npm run dev --workspace=web",
     "dev:api": "npm run dev --workspace=api",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:generate": "drizzle-kit generate --config=api/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=api/drizzle.config.ts",
+    "db:seed": "ts-node api/src/db/seed.ts"
   },
   "repository": {
     "type": "git",

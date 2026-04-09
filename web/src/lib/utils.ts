@@ -19,7 +19,7 @@ export function getRoles(roles: RoleTypes[]): string {
     return roles.map(role => roleLabels[role] ?? role).join(', ');
 }
 
-export function formatDateTimeToDMYHM(date: Date): string {
+export function formatDateTimeToDMYHM(date: Date | null): string {
     if (!date) {
         return "";
     }

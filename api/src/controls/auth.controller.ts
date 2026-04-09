@@ -1,11 +1,12 @@
 import {NextFunction, Request, Response} from "express";
 import {db} from "../db";
-import { users} from "../db/schema";
-import {and, eq} from "drizzle-orm";
+import {users, userStatuses, verificationTokens} from "../db/schema";
+import {and, eq, gt} from "drizzle-orm";
 import {StatusCodes} from "../enums/status-codes.enum";
-import {comparePassword, generateToken, userProfileFields} from "../helpers/utils";
+import {comparePassword, generateToken, hashPassword, userProfileFields} from "../helpers/utils";
 import type {LoginUser} from "@sts/models/login-user";
 import type {LoginResponse} from "@sts/models/login-response";
+import {UserStatus} from "../enums/user-status.enum";
 
 export class AuthController {
     static async login(req: Request, res: Response, next: NextFunction) {
@@ -55,6 +56,14 @@ export class AuthController {
             const match = await comparePassword(password, user.passwordHash);
             if (!match) return res.status(StatusCodes.BAD_REQUEST).json({message: "Invalid phone or password. Please try again."});
             
+            const result = await db.update(users).set({
+                lastLoginTime: new Date(),
+            }).where(eq(users.id, user.id));
+            
+            if (result.rowCount === 0) {
+                return res.status(StatusCodes.NOT_FOUND).json({error: 'Kullanıcı bulunamadı.'})
+            }
+            
             const { passwordHash, userProfile, employeeProfile, userRoles, ...safeUser } = user
             const userMap: LoginUser = {
                 ...safeUser,
@@ -83,6 +92,46 @@ export class AuthController {
             return res.status(StatusCodes.BAD_REQUEST).json({message: e});
         }
     }
+
+    static async setPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { token, password } = req.body;
+            const now = new Date();
+
+            const findToken = await db.query.verificationTokens.findFirst({
+                where: and(
+                    eq(verificationTokens.token, token),
+                    eq(verificationTokens.isUsed, false),
+                    gt(verificationTokens.expiresAt, now)
+                )
+            });
+
+            if (!findToken) {
+                return res.status(StatusCodes.NOT_FOUND).send({error: 'Token geçerli değil veya süresi bitmiş.'})
+            }
+
+            const activeStatus = await db.query.userStatuses.findFirst({
+                where: eq(userStatuses.name, UserStatus.ACTIVE)
+            });
+
+            await db.transaction(async (trx) => {
+                await trx.update(verificationTokens).set({
+                    isUsed: true,
+                }).where(eq(verificationTokens.token, token));
+
+                await trx.update(users).set({
+                    passwordHash: await hashPassword(password),
+                    isActive: true,
+                    statusId: activeStatus?.id
+                }).where(eq(users.id, findToken?.userId as any));
+            })
+
+            return res.status(StatusCodes.OK).send({message: 'Şifre başarılı bir şekilde oluşturuldu.'});
+        } catch (e: any) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e});
+        }
+    }
+    
     static async logout(req: Request, res: Response) {
         try {
             res.clearCookie('accessToken');
