@@ -165,6 +165,7 @@ export default function ServiceProviderPage() {
             resizable: false,
             sortable: false,
             disableColumnMenu: true,
+            maxWidth: 50,
             align: "right",
             renderCell: (params) => (
                 <ActionMenu

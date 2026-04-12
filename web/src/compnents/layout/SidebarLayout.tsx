@@ -1,7 +1,6 @@
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Drawer from "@mui/material/Drawer";
-import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -29,19 +28,27 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
     const drawer = (
         <div>
             <Toolbar sx={{py: 1}}>
-                <Typography
-                    variant="h5"
-                    textAlign="center"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    fontWeight="bold"
-                >
-                    <div
-                        className="rounded-full w-10 h-10 p-3 bg-primary/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined !text-2xl text-primary">handyman</span>
-                    </div>
-                </Typography>
+                {/*<Typography*/}
+                {/*    variant="h5"*/}
+                {/*    textAlign="center"*/}
+                {/*    display="flex"*/}
+                {/*    alignItems="center"*/}
+                {/*    justifyContent="center"*/}
+                {/*    fontWeight="bold"*/}
+                {/*>*/}
+                {/*    <div*/}
+                {/*        className="rounded-full w-10 h-10 p-3 bg-primary/10 flex items-center justify-center">*/}
+                {/*        <span className="material-symbols-outlined !text-2xl text-primary">handyman</span>*/}
+                {/*    </div>*/}
+                {/*</Typography>*/}
+                <div className="flex items-center justify-center w-full">
+                    <img
+                        width="112"
+                        src="/logo-primary.png"
+                        alt="logo"
+                        loading="lazy"
+                    />
+                </div>
             </Toolbar>
             <Divider/>
             {/*<Divider/>*/}

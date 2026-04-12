@@ -86,12 +86,16 @@ export default function LoginPage() {
                         {/*        <span className="material-symbols-outlined !text-3xl text-primary">handyman</span>*/}
                         {/*    </div>*/}
                         {/*</Typography>                        */}
-
-                        <img
-                            src="/vite.svg"
-                            alt="logo"
-                            loading="lazy"
-                        />
+                        
+                        
+                        <div className="flex items-center justify-center w-full">
+                            <img
+                                width="300"
+                                src="/logo-primary.png"
+                                alt="logo"
+                                loading="lazy"
+                            />
+                        </div>
                         
                         {!formState.isValid && formState.isDirty && formErrorMessages().length > 0 ?
                             <Alert sx={{display: "flex", alignItems: "center"}}
