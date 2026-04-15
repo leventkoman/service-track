@@ -10,8 +10,8 @@ const statusStyles: Record<string, { bg: string; text: string; border: string }>
         border: 'border-amber-600',
     },
     in_progress: {
-        bg: 'bg-[#42a5f5]',
-        text: 'text-black',
+        bg: 'bg-[#e3f2fd]',
+        text: 'text-[#1565c0]',
         border: 'border-[#1565c0]',
     },
     done: {

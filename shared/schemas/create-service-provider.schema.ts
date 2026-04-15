@@ -9,7 +9,8 @@ export const createServiceProviderSchema = z.object({
         .max(255, 'Firma ismi 250 karakter olmalı'),
     taxNumber: z.string()
         .max(11, 'Telafon numarası 11 karakter olmalı.'),
-    address: z.string()
+    address: z.string(),
+    planType: z.string().nullable().optional(),
 });
 
 export type CreateServiceProviderValue = z.infer<typeof createServiceProviderSchema>;

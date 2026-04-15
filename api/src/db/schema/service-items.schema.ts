@@ -1,6 +1,6 @@
 import {decimal, index, integer, pgTable, primaryKey, uuid, varchar} from "drizzle-orm/pg-core";
 import {baseIdColumn} from "./base-id-column.schema";
-import {serviceRequests} from "./service_requests.schema";
+import {serviceRequests} from "./service-requests.schema";
 import {units} from "./units.schema";
 import {vatRates} from "./vat-rates.schema";
 import {baseAuditColumn} from "./base-audit-column.schema";
@@ -11,6 +11,8 @@ export const serviceItems = pgTable('service_items', {
     quantity: integer('quantity').notNull(),
     lineTotal: decimal('line_total', {precision: 10, scale: 2}).notNull(),
     unitPrice: decimal('unit_price', {precision: 10, scale: 2}).notNull(),
+    itemPrice: decimal('item_price', {precision: 10, scale: 2}).notNull(),
+    vatRatePrice: decimal('vat_rate_price', {precision: 10, scale: 2}).notNull(),
     serviceRequestId: uuid('service_request_id')
         .references(() => serviceRequests.id, {
             onDelete: 'set null'

@@ -10,6 +10,8 @@ import cookieParser from "cookie-parser";
 import {authenticate} from "./middlewares/authenticate";
 import serviceRequestRoute from "./routes/service-request.route";
 import serviceRequestStatusRoute from "./routes/service-request-status.route";
+import unitRoute from "./routes/unit.route";
+import vatRateRoute from "./routes/vat-rate.route";
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -29,7 +31,9 @@ app.use('/api/customers', authenticate, customerRoute);
 app.use('/api/serviceProviders', authenticate, serviceProviderRoute);
 app.use('/api/serviceRequests', authenticate, serviceRequestRoute);
 app.use('/api/serviceRequestStatuses', authenticate, serviceRequestStatusRoute);
+app.use('/api/units', authenticate, unitRoute);
 app.use('/api/users', authenticate, userRoute);
+app.use('/api/vatRates', authenticate, vatRateRoute);
 
 // Listen to port
 app.listen(port, (error) => {

@@ -4,9 +4,9 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle,
+    DialogTitle, FormControl, FormControlLabel, FormLabel,
     IconButton,
-    Paper,
+    Paper, Radio, RadioGroup,
     styled,
     TextField,
     Typography
@@ -14,7 +14,7 @@ import {
 import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {serviceProviderService} from "@stf/features/service-provider/services/service-provider.service";
-import {Add, Close, Delete, Edit} from "@mui/icons-material";
+import {Add, Close, Edit} from "@mui/icons-material";
 import ActionMenu from "../../compnents/common/ActionMenu";
 import SearchTextField from "../../compnents/common/SearchTextField";
 import type {ServiceProviderList} from "@sts/types/service-provider.types";
@@ -46,16 +46,18 @@ export default function ServiceProviderPage() {
     const [search, setSearch] = useState("");
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
-    const [deleteServiceProvider, setDeleteServiceProvider] = useState<ServiceProviderList | null>(null);
+    const [deleteServiceProvider] = useState<ServiceProviderList | null>(null);
     const [dialogMode, setDialogMode] = useState<PageMode>(PageMode.CREATE);
     const paginationModel = {page: 0, pageSize: 10};
     const controllerRef = useRef<AbortController | null>(null);
-    const defaultValues = {
+    const defaultValues: CreateServiceProviderValue = {
         id: null,
         phone: '',
         email: '',
         companyName: '',
-        taxNumber: ''
+        taxNumber: '',
+        address: '',
+        planType: "monthly",
     };
 
     const {control, handleSubmit, formState, reset} = useForm<CreateServiceProviderValue>({
@@ -95,9 +97,12 @@ export default function ServiceProviderPage() {
         const controller = new AbortController();
         controllerRef.current = controller;
         try {
-            dialogMode === PageMode.CREATE 
-                ? await serviceProviderService.createServiceProvider(values, controller.signal) 
-                : await serviceProviderService.updateServiceProvider(values, controller.signal);
+            if (dialogMode === PageMode.CREATE) {
+                const { planType, ...safeValues} = values;
+                await serviceProviderService.createServiceProvider(safeValues, controller.signal)
+            } else {
+                await serviceProviderService.updateServiceProvider(values, controller.signal);
+            }
             showSnackbar('Başarılı bir şekilde güncellendi.')
             await fetchData();
         } catch (err: any) {
@@ -108,11 +113,20 @@ export default function ServiceProviderPage() {
         }
     }
 
-    const handleClickOpen = (pageMode: PageMode = PageMode.CREATE, values?: CreateServiceProviderValue) => {
+    const handleClickOpen = (pageMode: PageMode = PageMode.CREATE, values?: ServiceProviderList) => {
+        console.log("values", values);
         setOpenDialog(true);
         setDialogMode(pageMode);
         if (pageMode === PageMode.EDIT && values) {
-            reset(values)
+            reset({
+                id: values.id,
+                email: values.email,
+                phone: values.phone,
+                address: values.address,
+                companyName: values.companyName,
+                taxNumber: values.taxNumber,
+                planType: values.subscription.subscriptionPlan.planType
+            })
         } else {
             reset(defaultValues);
         }
@@ -123,10 +137,10 @@ export default function ServiceProviderPage() {
         reset()
     }
 
-    const handleDelete = async (sp: ServiceProviderList) => {
-        setOpenDeleteDialog(true);
-        setDeleteServiceProvider(sp)
-    }
+    // const handleDelete = async (sp: ServiceProviderList) => {
+    //     setOpenDeleteDialog(true);
+    //     setDeleteServiceProvider(sp)
+    // }
     
     const onDelete = async () => {
         if (!deleteServiceProvider) return;
@@ -157,7 +171,10 @@ export default function ServiceProviderPage() {
             field: 'createdBy', headerName: 'Oluşturan', flex: 1, resizable: false, minWidth: 200,
             valueGetter: (_, row: ServiceProviderList) => `${row.createdBy.fullName || ''}`,
         },
-        {field: 'address', headerName: 'Adres', flex: 1, resizable: false, minWidth: 200},
+        {
+            field: 'subscription', headerName: 'Üyelik Planı', flex: 1, resizable: false, minWidth: 200,
+            valueGetter: (_, row: ServiceProviderList) => `${row.subscription?.subscriptionPlan?.name || ''}`,
+        },
         {
             field: 'actions',
             headerName: '',
@@ -176,12 +193,12 @@ export default function ServiceProviderPage() {
                             icon: <Edit fontSize="small"/>,
                             onClick: (row: CreateServiceProviderValue) => handleClickOpen(PageMode.EDIT, row),
                         },
-                        {
-                            label: 'Sil',
-                            icon: <Delete fontSize="small"/>,
-                            onClick: (row: ServiceProviderList) => handleDelete(row),
-                            color: 'error.main',
-                        },
+                        // {
+                        //     label: 'Sil',
+                        //     icon: <Delete fontSize="small"/>,
+                        //     onClick: (row: ServiceProviderList) => handleDelete(row),
+                        //     color: 'error.main',
+                        // },
                     ]}
                 />
             )
@@ -273,6 +290,35 @@ export default function ServiceProviderPage() {
                         flexDirection="column"
                         gap={3}
                     >
+                        {PageMode.EDIT === dialogMode && (
+                            <>
+                                <Controller
+                                    name="planType"
+                                    control={control}
+                                    render={({field}) => (
+                                        <FormControl>
+                                            <FormLabel
+                                                sx={{fontWeight: "bold", pb: 1, color: "black"}}
+                                                required
+                                                id="plan-type-label"
+                                                focused={false}
+                                            >
+                                                Üyelik tipi
+                                            </FormLabel>
+                                            <RadioGroup
+                                                row
+                                                aria-labelledby="customer-type-label"
+                                                {...field} // field.value ve field.onChange bağlanıyor
+                                            >
+                                                <FormControlLabel value="freeTrial" control={<Radio/>} label="Ücretsiz deneme"/>
+                                                <FormControlLabel value="monthly" control={<Radio/>} label="Aylık"/>
+                                                <FormControlLabel value="yearly" control={<Radio/>} label="Yıllık"/>
+                                            </RadioGroup>
+                                        </FormControl>
+                                    )}
+                                />
+                            </>
+                        )}
                         <Typography
                             variant="body1"
                             fontWeight="bold"

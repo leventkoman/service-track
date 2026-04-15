@@ -1,6 +1,6 @@
 import {pgTable, primaryKey, uuid} from "drizzle-orm/pg-core";
 import {users} from "./users.schema";
-import {serviceRequests} from "./service_requests.schema";
+import {serviceRequests} from "./service-requests.schema";
 
 export const serviceRequestEmployees = pgTable('service_request_employees', {
         employeeId: uuid('employee_id')

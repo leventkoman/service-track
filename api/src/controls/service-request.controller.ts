@@ -228,6 +228,14 @@ export class ServiceRequestController {
                                 }
                             }
                         }
+                    },
+                    items: {
+                        columns: {
+                            isDeleted: false,
+                            createdAt: false,
+                            updatedAt: false,
+                            serviceRequestId: false,
+                        }
                     }
                 }
             });
@@ -236,7 +244,7 @@ export class ServiceRequestController {
                 return res.status(StatusCodes.NOT_FOUND).json({error: 'Service kaydı bulunamadı.'});
             }
             
-            const { customer, user: createdBy, serviceRequestEmployee, ...safeServiceRequest } = serviceRequest; 
+            const { customer, user: createdBy, serviceRequestEmployee, items, ...safeServiceRequest } = serviceRequest; 
             const response = {
                 ...safeServiceRequest,
                 createdBy: {
@@ -252,6 +260,7 @@ export class ServiceRequestController {
                     email: customer?.users?.email,
                     ...customer?.users?.userProfile
                 },
+                items,
                 employees: serviceRequestEmployee.map(({user, ...serviceRequestEmployee}) => ({
                     id: user?.id,
                     email: user?.email,
@@ -366,12 +375,11 @@ export class ServiceRequestController {
         }
     }
     
-    // service items eklenecek.
     static async updateServiceRequest(req: Request, res: Response, next: NextFunction) {
         try {
             const user = req.user!;
             const requestId = req.params.id as string;
-            const {problem, serviceRequestStatusId, serviceProviderId, customerId, employeeIds, solution, totalAmount} = req.body as {
+            const {problem, serviceRequestStatusId, serviceProviderId, customerId, employeeIds, solution, totalAmount, items} = req.body as {
                 serviceNumber: string;
                 problem: string;
                 serviceRequestStatusId: string;
@@ -380,26 +388,27 @@ export class ServiceRequestController {
                 employeeIds: string[];
                 solution: string;
                 totalAmount: string;
+                items: any[];
             };
-            const findStatus = await db.query.serviceRequestStatuses.findFirst({
-                where: and(
-                    eq(serviceRequestStatuses.isDeleted, false),
-                    eq(serviceRequestStatuses.id, serviceRequestStatusId)
-                ),
-                columns: {
-                    name: true,
-                    nameLocalized: true,
-                }
-            });
-            
-            if (findStatus && findStatus.name !== ServiceRequestStatus.Done) {
-                return res.status(StatusCodes.BAD_REQUEST).send({error: `Güncelleme yapabilmek için servis kaydının durumu ${findStatus?.nameLocalized} olmalı.`});
-            }
+            // const findStatus = await db.query.serviceRequestStatuses.findFirst({
+            //     where: and(
+            //         eq(serviceRequestStatuses.isDeleted, false),
+            //         eq(serviceRequestStatuses.id, serviceRequestStatusId)
+            //     ),
+            //     columns: {
+            //         name: true,
+            //         nameLocalized: true,
+            //     }
+            // });
+            //
+            // if (findStatus && findStatus.name !== ServiceRequestStatus.Done) {
+            //     return res.status(StatusCodes.BAD_REQUEST).send({error: `Güncelleme yapabilmek için servis kaydının durumu Tamamladı  olmalı.`});
+            // }
             
             const findRequest = await db.query.serviceRequests.findFirst({
                 where: and(
                     eq(serviceRequests.isDeleted, false),
-                    eq(serviceRequests.id, serviceRequestStatusId)
+                    eq(serviceRequests.id, requestId)
                 ),
                 columns: {
                     completedAt: true
@@ -424,7 +433,7 @@ export class ServiceRequestController {
                 ));
                 
                 if (serviceRequestResult.rowCount === 0) {
-                    throw ({status: StatusCodes.NOT_FOUND, message: 'No service provider found.'});
+                    throw ({status: StatusCodes.NOT_FOUND, message: 'Servis kaydı bulunamadı'});
                 }
                 
                 await trx.delete(serviceRequestEmployees)
@@ -438,6 +447,25 @@ export class ServiceRequestController {
                         }))
                     )
                 }
+                
+                if (items.length === 0) {return;}
+                
+                await trx.delete(serviceItems)
+                    .where(eq(serviceItems.serviceRequestId, requestId));
+                
+                await trx.insert(serviceItems).values(
+                    items.map((item) => ({
+                        itemName: item.itemName,
+                        itemPrice: item.itemPrice,
+                        lineTotal: item.lineTotal,
+                        quantity: item.quantity,
+                        unitId: item.unitId,
+                        unitPrice: item.unitPrice,
+                        vatRateId: item.vatRateId,
+                        vatRatePrice: item.vatRatePrice,
+                        serviceRequestId: requestId,
+                    }))
+                )
             })
             
             return res.status(StatusCodes.NO_CONTENT).send();

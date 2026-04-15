@@ -1,4 +1,5 @@
 import {UserProfile} from "@sts/models/user-profile";
+import {Subscription} from "@sts/models/subscription.model";
 
 export interface ServiceProvider {
     id: string;
@@ -11,4 +12,5 @@ export interface ServiceProvider {
     createdAt: Date;
     updatedAt: Date;
     firstContactDate: Date;
+    subscription: Subscription;
 }

@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import {StatusCodes} from "../enums/status-codes.enum";
 import {db} from "../db";
-import {employeeProfiles, serviceProviders} from "../db/schema";
+import {employeeProfiles, serviceProviders, subscriptionPlans, subscriptions} from "../db/schema";
 import {and, eq} from "drizzle-orm";
 import {generateToken, roleMatch, setAccessTokenCookie, userProfileFields} from "../helpers/utils";
 import {Role} from "../enums/role.enum";
@@ -32,6 +32,22 @@ export class ServiceProviderController {
                                 columns: { ...userProfileFields() }
                             }
                         }
+                    },
+                    subscription: {
+                        columns: {
+                            id: true,
+                            startDate: true,
+                            endDate: true,
+                        },
+                        with: {
+                            subscriptionPlan: {
+                                columns: {
+                                    isDeleted: false,
+                                    updatedAt: false,
+                                    createdAt: false,
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -42,7 +58,8 @@ export class ServiceProviderController {
                     email: sp.createdBy?.email,
                     phone: sp.createdBy?.phone,
                     ...sp.createdBy?.userProfile,
-                }
+                },
+                subscription: sp.subscription[0]
             }));
             
             return res.status(StatusCodes.OK).json(response);
@@ -121,6 +138,22 @@ export class ServiceProviderController {
                     employeeId: spResult.createdBy,
                     serviceProviderId: spResult.id
                 });
+                
+                const freePlan = await db.query.subscriptionPlans.findFirst({
+                    where: (and(
+                        eq(subscriptionPlans.isDeleted, false),
+                        eq(subscriptionPlans.planType, 'freeTrial')
+                    ))
+                });
+                
+                if (!freePlan) {return;}
+                
+                await trx.insert(subscriptions).values({
+                    planId: freePlan.id,
+                    serviceProviderId: spResult.id,
+                    startDate: new Date(),
+                    endDate: new Date(Date.now() + freePlan.duration * 24 * 60 * 60 * 1000)
+                })
                 
                 const payload = {
                     userId: user.userId,

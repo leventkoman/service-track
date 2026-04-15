@@ -21,6 +21,6 @@ export const serviceRequestRelations = relations(serviceRequests, ({one, many}) 
         fields: [serviceRequests.serviceRequestStatusId],
         references: [serviceRequestStatuses.id]
     }),
-    serviceItems: many(serviceItems),
+    items: many(serviceItems),
     serviceRequestEmployee: many(serviceRequestEmployees)
 }))

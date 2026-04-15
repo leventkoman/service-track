@@ -1,7 +1,16 @@
 import * as dotenv from 'dotenv';
 dotenv.config({ path: 'api/.env' });
 import {db} from "./index";
-import {roles, serviceRequestStatuses, units, userStatuses, vatRates} from "./schema";
+import {
+    roles,
+    serviceRequestStatuses,
+    subscriptionPlans,
+    units,
+    userProfiles,
+    users,
+    userStatuses,
+    vatRates
+} from "./schema";
 
 async function seed() {
     console.log('Seeding started...');
@@ -12,6 +21,16 @@ async function seed() {
         { name: 'suspended', nameLocalized: 'Askıya alındı', sortOrder: 2 },
     ]).onConflictDoNothing();
     console.log('✓ user statuses seeded.');
+
+    // Todo: Add super admin to users and userProfile table 
+
+    // await db.insert(users).values([
+    //     { id: '66858c4b-d7be-4cd6-95f5-38608c546a53', phone: '05383932650', email: 'leventkoman@yahoo.com', isActive: true, isDeleted: false  }
+    // ]).onConflictDoNothing();
+    //
+    // await db.insert(userProfiles).values([
+    //     { fullName: 'Levent Koman', address: 'Kars / Kağızman', title: "Senior Software Developer", description: "Project owner", userId: '66858c4b-d7be-4cd6-95f5-38608c546a53'  }
+    // ]).onConflictDoNothing();
 
     await db.insert(roles).values([
         { name: 'super_admin' },
@@ -93,12 +112,20 @@ async function seed() {
     console.log('✓ units seeded.');
 
     await db.insert(vatRates).values([
-        { rate: "0.00", name: '' },
+        { rate: "0.00", name: '0' },
         { rate: "1.00", name: '1' },
         { rate: "8.00", name: '8' },
         { rate: "10.00", name: '10' },
         { rate: "18.00", name: '18' },
         { rate: "20.00", name: '20' }
+    ]).onConflictDoNothing();
+    console.log('✓ vat rates seeded.');
+
+    await db.insert(subscriptionPlans).values([
+        { planType: "free", name: 'Ücretsiz', duration: 0 },
+        { planType: "freeTrial", name: 'Ücretsiz deneme', duration: 7 },
+        { planType: "monthly", name: 'Aylık', duration: 30 },
+        { planType: "yearly", name: 'Yıllık', duration: 360 },
     ]).onConflictDoNothing();
     console.log('✓ vat rates seeded.');
 
