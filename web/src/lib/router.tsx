@@ -10,7 +10,7 @@ import {
     DashboardPage,
     LoginPage,
     ServiceProviderPage,
-    ServiceRequestPage,
+    ServiceRequestPage, SubscriptionsPage,
     UserPage
 } from "../pages";
 import TableSkeleton from "../compnents/common/skletons/TableSkeleton";
@@ -87,6 +87,10 @@ export const router = createBrowserRouter([
             {
                 path: '/service-requests/:serviceRequestId/edit',
                 element: (withSuspense(CreateServiceRequestPage))
+            },
+            {
+                path: '/subscriptions',
+                element: (withSuspense(SubscriptionsPage, <TableSkeleton/>))
             },
         ]
     }

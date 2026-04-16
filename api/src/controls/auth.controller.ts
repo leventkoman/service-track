@@ -11,12 +11,12 @@ import {UserStatus} from "../enums/user-status.enum";
 export class AuthController {
     static async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const {phone, password} = req.body;
+            const {email, password} = req.body;
             const user = await db.query.users.findFirst({
                 where: and(
                     eq(users.isActive, true),
                     eq(users.isDeleted, false),
-                    eq(users.phone, phone)
+                    eq(users.email, email)
                 ),
                 columns: {
                     id: true,
@@ -54,7 +54,7 @@ export class AuthController {
             }
 
             const match = await comparePassword(password, user.passwordHash);
-            if (!match) return res.status(StatusCodes.BAD_REQUEST).json({message: "Invalid phone or password. Please try again."});
+            if (!match) return res.status(StatusCodes.BAD_REQUEST).json({message: "Geçersiz mail veya şifre girdiniz."});
             
             const result = await db.update(users).set({
                 lastLoginTime: new Date(),

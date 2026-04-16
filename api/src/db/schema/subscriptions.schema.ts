@@ -1,4 +1,4 @@
-import {pgTable, timestamp, uuid} from "drizzle-orm/pg-core";
+import {boolean, pgTable, timestamp, uuid} from "drizzle-orm/pg-core";
 import {baseIdColumn} from "./base-id-column.schema";
 import {subscriptionPlans} from "./subscription-plans.schema";
 import {serviceProviders} from "./service-providers.schema";
@@ -14,6 +14,7 @@ export const subscriptions = pgTable("subscriptions", {
         onDelete: 'set null'
     }),
     startDate: timestamp('start_date').notNull(),
-    endDate: timestamp('end_date').notNull(),
+    endDate: timestamp('end_date'),
+    isActive: boolean('is_active').default(false),
     ...baseAuditColumn()
 });

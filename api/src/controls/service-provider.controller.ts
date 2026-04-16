@@ -32,22 +32,6 @@ export class ServiceProviderController {
                                 columns: { ...userProfileFields() }
                             }
                         }
-                    },
-                    subscription: {
-                        columns: {
-                            id: true,
-                            startDate: true,
-                            endDate: true,
-                        },
-                        with: {
-                            subscriptionPlan: {
-                                columns: {
-                                    isDeleted: false,
-                                    updatedAt: false,
-                                    createdAt: false,
-                                }
-                            }
-                        }
                     }
                 }
             });
@@ -58,8 +42,7 @@ export class ServiceProviderController {
                     email: sp.createdBy?.email,
                     phone: sp.createdBy?.phone,
                     ...sp.createdBy?.userProfile,
-                },
-                subscription: sp.subscription[0]
+                }
             }));
             
             return res.status(StatusCodes.OK).json(response);

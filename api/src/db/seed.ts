@@ -122,7 +122,7 @@ async function seed() {
     console.log('✓ vat rates seeded.');
 
     await db.insert(subscriptionPlans).values([
-        { planType: "free", name: 'Ücretsiz', duration: 0 },
+        { planType: "unlimited", name: 'Süresiz kullanım', duration: 0 },
         { planType: "freeTrial", name: 'Ücretsiz deneme', duration: 7 },
         { planType: "monthly", name: 'Aylık', duration: 30 },
         { planType: "yearly", name: 'Yıllık', duration: 360 },

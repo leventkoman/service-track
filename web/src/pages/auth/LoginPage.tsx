@@ -15,7 +15,7 @@ export default function LoginPage() {
     const {control, handleSubmit, formState} = useForm<LoginValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            phone: "",
+            email: "",
             password: ""
         },
         mode: "onChange",
@@ -102,17 +102,17 @@ export default function LoginPage() {
                                    severity="error">{formErrorMessages() }</Alert> : ''}
 
                         <Controller
-                            name="phone"
+                            name="email"
                             control={control}
                             render={({field, fieldState}) => (
                                 <TextField
                                     {...field}
                                     fullWidth
-                                    label="Telefon"
-                                    placeholder="Telefon"
+                                    label="Mail adresi"
+                                    placeholder="Mail adresi"
                                     slotProps={{inputLabel: {required: true}}}
                                     error={fieldState.invalid}
-                                    helperText={fieldState.invalid ? 'Geçersiz telefon numarası' : ''}
+                                    helperText={fieldState.invalid ? 'Geçersiz mail adresi' : ''}
                                 />
                             )}
                         />

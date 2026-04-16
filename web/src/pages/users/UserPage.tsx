@@ -111,7 +111,7 @@ export default function UserPage() {
         {field: 'phone', headerName: 'Telefon', flex: 1, resizable: false, minWidth: 200},
         {field: 'email', headerName: 'Email', flex: 1, resizable: false, minWidth: 200},
         {
-            field: 'address',
+            field: 'status',
             headerName: 'Durumu',
             flex: 1,
             resizable: false,

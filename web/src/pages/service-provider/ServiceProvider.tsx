@@ -4,9 +4,9 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle, FormControl, FormControlLabel, FormLabel,
+    DialogTitle,
     IconButton,
-    Paper, Radio, RadioGroup,
+    Paper,
     styled,
     TextField,
     Typography
@@ -56,8 +56,7 @@ export default function ServiceProviderPage() {
         email: '',
         companyName: '',
         taxNumber: '',
-        address: '',
-        planType: "monthly",
+        address: ''
     };
 
     const {control, handleSubmit, formState, reset} = useForm<CreateServiceProviderValue>({
@@ -97,12 +96,10 @@ export default function ServiceProviderPage() {
         const controller = new AbortController();
         controllerRef.current = controller;
         try {
-            if (dialogMode === PageMode.CREATE) {
-                const { planType, ...safeValues} = values;
-                await serviceProviderService.createServiceProvider(safeValues, controller.signal)
-            } else {
-                await serviceProviderService.updateServiceProvider(values, controller.signal);
-            }
+            dialogMode === PageMode.CREATE
+            ? await serviceProviderService.createServiceProvider(values, controller.signal)
+            : await serviceProviderService.updateServiceProvider(values, controller.signal);
+            
             showSnackbar('Başarılı bir şekilde güncellendi.')
             await fetchData();
         } catch (err: any) {
@@ -113,20 +110,11 @@ export default function ServiceProviderPage() {
         }
     }
 
-    const handleClickOpen = (pageMode: PageMode = PageMode.CREATE, values?: ServiceProviderList) => {
-        console.log("values", values);
+    const handleClickOpen = (pageMode: PageMode = PageMode.CREATE, values?: CreateServiceProviderValue) => {
         setOpenDialog(true);
         setDialogMode(pageMode);
         if (pageMode === PageMode.EDIT && values) {
-            reset({
-                id: values.id,
-                email: values.email,
-                phone: values.phone,
-                address: values.address,
-                companyName: values.companyName,
-                taxNumber: values.taxNumber,
-                planType: values.subscription.subscriptionPlan.planType
-            })
+            reset(values)
         } else {
             reset(defaultValues);
         }
@@ -172,10 +160,6 @@ export default function ServiceProviderPage() {
             valueGetter: (_, row: ServiceProviderList) => `${row.createdBy.fullName || ''}`,
         },
         {
-            field: 'subscription', headerName: 'Üyelik Planı', flex: 1, resizable: false, minWidth: 200,
-            valueGetter: (_, row: ServiceProviderList) => `${row.subscription?.subscriptionPlan?.name || ''}`,
-        },
-        {
             field: 'actions',
             headerName: '',
             flex: 1,
@@ -191,7 +175,7 @@ export default function ServiceProviderPage() {
                         {
                             label: 'Düzenle',
                             icon: <Edit fontSize="small"/>,
-                            onClick: (row: CreateServiceProviderValue) => handleClickOpen(PageMode.EDIT, row),
+                            onClick: (row: ServiceProviderList) => handleClickOpen(PageMode.EDIT, row),
                         },
                         // {
                         //     label: 'Sil',
@@ -290,35 +274,6 @@ export default function ServiceProviderPage() {
                         flexDirection="column"
                         gap={3}
                     >
-                        {PageMode.EDIT === dialogMode && (
-                            <>
-                                <Controller
-                                    name="planType"
-                                    control={control}
-                                    render={({field}) => (
-                                        <FormControl>
-                                            <FormLabel
-                                                sx={{fontWeight: "bold", pb: 1, color: "black"}}
-                                                required
-                                                id="plan-type-label"
-                                                focused={false}
-                                            >
-                                                Üyelik tipi
-                                            </FormLabel>
-                                            <RadioGroup
-                                                row
-                                                aria-labelledby="customer-type-label"
-                                                {...field} // field.value ve field.onChange bağlanıyor
-                                            >
-                                                <FormControlLabel value="freeTrial" control={<Radio/>} label="Ücretsiz deneme"/>
-                                                <FormControlLabel value="monthly" control={<Radio/>} label="Aylık"/>
-                                                <FormControlLabel value="yearly" control={<Radio/>} label="Yıllık"/>
-                                            </RadioGroup>
-                                        </FormControl>
-                                    )}
-                                />
-                            </>
-                        )}
                         <Typography
                             variant="body1"
                             fontWeight="bold"

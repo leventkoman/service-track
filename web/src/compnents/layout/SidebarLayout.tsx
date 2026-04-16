@@ -7,7 +7,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import {Business, Dashboard, Diversity3, Group, Handyman} from "@mui/icons-material";
+import {Business, CurrencyExchange, Dashboard, Diversity3, Group, Handyman} from "@mui/icons-material";
 import {Link, useLocation} from "react-router";
 
 interface SidebarLayoutProps {
@@ -23,6 +23,7 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
         {text: 'Müşteriler', icon: <Diversity3 />, path: '/customers'},
         {text: 'Çalışanlar', icon: <Group />, path: '/users'}, // if role is superAdmin text should be users instead of employees
         {text: 'Service Kayıtları', icon: <Handyman />, path: '/service-requests'},
+        {text: 'Üyelikler', icon: <CurrencyExchange />, path: '/subscriptions'},
     ];
     const location = useLocation();
     const drawer = (
