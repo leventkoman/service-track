@@ -9,6 +9,8 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import {Business, CurrencyExchange, Dashboard, Diversity3, Group, Handyman} from "@mui/icons-material";
 import {Link, useLocation} from "react-router";
+import {useStore} from "@stf/store/use-store.store";
+import {roleMatch} from "@stf/lib/utils";
 
 interface SidebarLayoutProps {
     drawerWidth: number;
@@ -17,32 +19,21 @@ interface SidebarLayoutProps {
     onHandleDrawerClose: () => void;
 }
 export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawerClose, onHandleDrawerTransitionEnd}: SidebarLayoutProps) {
+    const user = useStore(s => s.user);
+    const isSPUser = roleMatch(user?.roles, ['admin', 'employee']);
     const menuItems = [
         {text: 'Anasayfa', icon: <Dashboard />, path: '/dashboard'},
-        {text: 'Firmalar', icon: <Business />, path: '/service-providers'},
+        {text: isSPUser ? 'Firma': 'Firmalar', icon: <Business />, path: '/service-providers'},
         {text: 'Müşteriler', icon: <Diversity3 />, path: '/customers'},
-        {text: 'Çalışanlar', icon: <Group />, path: '/users'}, // if role is superAdmin text should be users instead of employees
+        {text: isSPUser ? 'Çalışanlar' : 'Kullanıcılar', icon: <Group />, path: '/users'}, 
         {text: 'Service Kayıtları', icon: <Handyman />, path: '/service-requests'},
-        {text: 'Üyelikler', icon: <CurrencyExchange />, path: '/subscriptions'},
+        {text: 'Üyelikler', hidden: isSPUser, icon: <CurrencyExchange />, path: '/subscriptions'},
     ];
     const location = useLocation();
     const drawer = (
         <div>
-            <Toolbar sx={{py: 1}}>
-                {/*<Typography*/}
-                {/*    variant="h5"*/}
-                {/*    textAlign="center"*/}
-                {/*    display="flex"*/}
-                {/*    alignItems="center"*/}
-                {/*    justifyContent="center"*/}
-                {/*    fontWeight="bold"*/}
-                {/*>*/}
-                {/*    <div*/}
-                {/*        className="rounded-full w-10 h-10 p-3 bg-primary/10 flex items-center justify-center">*/}
-                {/*        <span className="material-symbols-outlined !text-2xl text-primary">handyman</span>*/}
-                {/*    </div>*/}
-                {/*</Typography>*/}
-                <div className="flex items-center justify-center w-full">
+            <Toolbar sx={{py: 1, paddingLeft: '16px !important'}}>
+                <div className="flex items-center justify-start w-full">
                     <img
                         width="112"
                         src="/logo-primary.png"
@@ -60,6 +51,7 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
                             component={Link}
                             to={item.path}
                             selected={location.pathname.includes(item.path)}
+                            hidden={item?.hidden}
                             sx={{
                                 "&.Mui-selected": {
                                     backgroundColor: "#e3f2fd",
@@ -84,7 +76,6 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
                 sx={{width: {sm: drawerWidth}, flexShrink: {sm: 0}}}
                 aria-label="mailbox folders"
             >
-                {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
                 <Drawer
                     variant="temporary"
                     open={isMobileOpen}

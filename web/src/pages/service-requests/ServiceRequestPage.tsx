@@ -16,13 +16,16 @@ import {
 } from "@mui/material";
 import SearchTextField from "../../compnents/common/SearchTextField";
 import {serviceRequestService} from "@stf/features/service-request/services/service-request.service";
-import {formatDateTimeToDMYHM} from "@stf/lib/utils";
+import {formatDateTimeToDMYHM, roleMatch} from "@stf/lib/utils";
 import StatusBadge from "../../compnents/common/StatusBadge";
 import type {ServiceRequest} from "@sts/models/service-request";
 // import {AxiosError} from "axios";
 import {useSnackbar} from "../../context/SnackbarContext";
+import {useStore} from "@stf/store/use-store.store";
 
 export default function ServiceRequestPage() {
+    const user = useStore(s => s.user);
+    const isSuperAdmin = roleMatch(user?.roles, ['super_admin']);
     const {showSnackbar} = useSnackbar();
     const [loading, setLoading] = useState<boolean>(true);
     // const [error, setError] = useState<string>('');
@@ -93,7 +96,7 @@ export default function ServiceRequestPage() {
             valueGetter: (_, row: ServiceRequest) => `${row.customer.fullName || ''}`,
         },
         {
-            field: 'serviceProvider', headerName: 'Firma', flex: 1, resizable: false, minWidth: 200,
+            field: 'serviceProvider', headerName: 'Firma', flex: 1, resizable: false, minWidth: 200, hideable: !isSuperAdmin,
             valueGetter: (_, row: ServiceRequest) => row.serviceProvider.companyName
         },
         {
@@ -104,6 +107,7 @@ export default function ServiceRequestPage() {
             minWidth: 200,
             headerAlign: "center",
             align: "center",
+            hideable: !isSuperAdmin,
             valueGetter: (_, row: ServiceRequest) => `${row.serviceRequestsStatus.nameLocalized || ''}`,
             renderCell: (params) => (
                 <div>
@@ -162,7 +166,7 @@ export default function ServiceRequestPage() {
         return data.filter((row: ServiceRequest) =>
             row?.serviceNumber?.toLowerCase().includes(search.toLowerCase()) ||
             row?.customer.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-            row?.serviceProvider.companyName?.toLowerCase().includes(search.toLowerCase()) ||
+            (isSuperAdmin ? row?.serviceProvider.companyName?.toLowerCase().includes(search.toLowerCase()): null) ||
             row?.serviceRequestsStatus.nameLocalized?.toLowerCase().includes(search.toLowerCase()) ||
             row?.createdBy?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
             row?.totalAmount?.toString()?.trim()?.toLowerCase().includes(search.toLowerCase()) ||
@@ -176,7 +180,7 @@ export default function ServiceRequestPage() {
     return (
         <div>
             <Typography variant="h5" fontWeight="bold" color="textPrimary" sx={{py: {sm: 3, xs: 2, xl: 3}}}>
-                Servis Kayıtları
+                { isSuperAdmin ? 'Firmaların Servis Kayıtları' : 'Servis Kayıtları' }
             </Typography>
             <Paper sx={{height: 'auto', width: "auto"}}>
                 <Box sx={{
@@ -188,19 +192,24 @@ export default function ServiceRequestPage() {
                     px: 1
                 }}>
                     <SearchTextField value={search} onChange={setSearch}/>
-                    <Button
-                        onClick={() => navigate('/service-requests/create')}
-                        startIcon={<Add/>}
-                        variant="contained"
-                    >
-                        Yeni kayıt oluştur
-                    </Button>
+                    { !isSuperAdmin && (
+                        <>
+                            <Button
+                                onClick={() => navigate('/service-requests/create')}
+                                startIcon={<Add/>}
+                                variant="contained"
+                            >
+                                Yeni kayıt oluştur
+                            </Button>
+                        </>
+                    ) }
                 </Box>
                 <DataGrid
                     rows={filteredData}
                     columns={columns}
                     columnVisibilityModel={{
-                        serviceProvider: false // only superAdmin can see this column
+                        actions: !isSuperAdmin,
+                        serviceProvider: isSuperAdmin!
                     }}
                     loading={loading}
                     initialState={{pagination: {paginationModel}}}

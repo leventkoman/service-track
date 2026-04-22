@@ -17,11 +17,15 @@ import {
 import SearchTextField from "../../compnents/common/SearchTextField";
 import {UserService} from "@stf/features/users/services/user.service";
 import type {UserProfile} from "@sts/models/user-profile";
-import {formatDateTimeToDMYHM, getRoles} from "@stf/lib/utils";
+import {formatDateTimeToDMYHM, getRoles, roleMatch} from "@stf/lib/utils";
 import {useSnackbar} from "../../context/SnackbarContext";
 import StatusBadge from "../../compnents/common/StatusBadge";
+import {useStore} from "@stf/store/use-store.store";
 
 export default function UserPage() {
+    const loginUser = useStore(s => s.user);
+    const isSuperAdmin = roleMatch(loginUser?.roles, ['super_admin']);
+    const isAdmin = roleMatch(loginUser?.roles, ['admin']);
     const {showSnackbar} = useSnackbar();
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<UserProfile[]>([]);
@@ -154,6 +158,7 @@ export default function UserPage() {
                         },
                         {
                             label: 'Sil',
+                            hidden: !(isAdmin! || isSuperAdmin!),
                             icon: <Delete fontSize="small"/>,
                             onClick: (row: UserProfile) => handleDelete(row),
                             color: 'error.main',
@@ -187,7 +192,7 @@ export default function UserPage() {
                 fontWeight="bold" 
                 color="textPrimary" 
                 sx={{py: {sm: 3, xs: 2, xl: 3}}}>
-                Kullanıcılar
+                { isSuperAdmin ? 'Kullanıcılar' : 'Çalışanlar' }
             </Typography>
             <Paper sx={{height: 'auto', width: "auto"}}>
                 <Box sx={{
@@ -201,9 +206,16 @@ export default function UserPage() {
                         value={search} 
                         onChange={setSearch}
                     />
-                    <Button onClick={() => navigate('/users/create')} startIcon={<Add/>} variant="contained">Kullanıcı oluştur</Button>
+                    {(isSuperAdmin || isAdmin) && (
+                        <>
+                            <Button onClick={() => navigate('/users/create')} startIcon={<Add/>} variant="contained">{ isSuperAdmin ? 'Kullanıcı oluştur' : 'Çalışan ekle' }</Button>
+                        </>
+                    )}
                 </Box>
                 <DataGrid
+                    columnVisibilityModel={{
+                        actions: (!isAdmin || !isSuperAdmin)
+                    }}
                     rows={filteredData}
                     columns={columns}
                     initialState={{pagination: {paginationModel}}}

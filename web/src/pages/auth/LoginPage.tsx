@@ -7,9 +7,11 @@ import {useEffect, useState} from "react";
 import {authService} from "@stf/features/auth/services/auth.service";
 import PasswordField from "../../compnents/common/PasswordField";
 import {useNavigate} from "react-router";
+import {useStore} from "@stf/store/use-store.store";
 
 export default function LoginPage() {
     const navigation = useNavigate();
+    const state = useStore.getState();
     const [pending, setPending] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const {control, handleSubmit, formState} = useForm<LoginValues>({
@@ -29,6 +31,7 @@ export default function LoginPage() {
             console.log('response:', response);
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user));
+            state.setUser(response.data.user);
             navigation('/dashboard');
         } catch (e: any) {
             console.error('catch:', e.response);
@@ -42,6 +45,7 @@ export default function LoginPage() {
     useEffect(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        state.logout();
     }, [])
 
     const password = useWatch({control, name: 'password'});

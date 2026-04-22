@@ -19,7 +19,6 @@ import {useEffect, useRef, useState} from "react";
 import FormSkeleton from "../../compnents/common/skletons/FormSkeleton";
 import {CustomerType} from "@sts/enums/customer-type.enum";
 
-
 export default function CreateCustomerPage() {
     const defaultValues: CreateCustomerValue = {
         id: null,
@@ -47,7 +46,7 @@ export default function CreateCustomerPage() {
 
     const getCustomerDetail = async (): Promise<void> => {
         if (!customerId) return;
-
+        
         const controller = new AbortController();
         controllerRef.current = controller;
         setLoading(true);

@@ -26,6 +26,8 @@ import {
 } from "@sts/schemas/create-service-provider.schema";
 import {PageMode} from "../../enums/page-mode.enum";
 import {useSnackbar} from "../../context/SnackbarContext";
+import {useStore} from "@stf/store/use-store.store";
+import {roleMatch} from "@stf/lib/utils";
 
 export const BootstrapDialog = styled(Dialog)(({theme}) => ({
     '& .MuiDialogTitle-root': {
@@ -40,6 +42,8 @@ export const BootstrapDialog = styled(Dialog)(({theme}) => ({
 }));
 
 export default function ServiceProviderPage() {
+    const user = useStore(s => s.user);
+    const isAdmin = roleMatch(user?.roles, ['admin']);
     const {showSnackbar} = useSnackbar();
     const [loading, setLoading] = useState<boolean>(true);
     const [data, setData] = useState<ServiceProviderList[]>([]);
@@ -168,6 +172,7 @@ export default function ServiceProviderPage() {
             disableColumnMenu: true,
             maxWidth: 50,
             align: "right",
+            hideable: !isAdmin,
             renderCell: (params) => (
                 <ActionMenu
                     row={params.row}
@@ -222,10 +227,16 @@ export default function ServiceProviderPage() {
                     {/*    : <Button startIcon={<Add/>} variant="contained" onClick={() => handleClickOpen(PageMode.CREATE)}>Firma*/}
                     {/*        oluştur</Button>}*/}
 
-                    <Button startIcon={<Add/>} variant="contained" onClick={() => handleClickOpen(PageMode.CREATE)}>Firma
-                        oluştur</Button>
+                    { isAdmin && (
+                        <>
+                            <Button startIcon={<Add/>} variant="contained" onClick={() => handleClickOpen(PageMode.CREATE)}>Firma oluştur</Button>
+                        </>
+                    ) }
                 </Box>
                 <DataGrid
+                    columnVisibilityModel={{
+                        actions: isAdmin!
+                    }}
                     rows={filteredData}
                     columns={columns}
                     loading={loading}

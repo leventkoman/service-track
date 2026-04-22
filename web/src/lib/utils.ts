@@ -26,3 +26,8 @@ export function formatDateTimeToDMYHM(date: Date | null): string {
     
     return dayjs(date).format('DD/MM/YYYY HH:mm');
 }
+
+export function roleMatch(userRoles: string[] | undefined, roles: string[] | undefined) {
+    if (!userRoles || !roles) return ;
+    return roles.some(r => userRoles.includes(r))
+}

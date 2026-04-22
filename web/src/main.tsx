@@ -1,4 +1,3 @@
-import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import './index.css'
 import './styles/styles.scss'
@@ -11,14 +10,12 @@ import {customTheme} from "./lib/theme.ts";
 import {SnackbarProvider} from "./context/SnackbarContext";
 
 createRoot(document.getElementById('root')!).render(
- 
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <ThemeProvider theme={customTheme}>
-                <CssBaseline/>
-                <SnackbarProvider>
-                    <RouterProvider router={router}/>
-                </SnackbarProvider>
-            </ThemeProvider>
-        </LocalizationProvider>
-
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <ThemeProvider theme={customTheme}>
+            <CssBaseline/>
+            <SnackbarProvider>
+                <RouterProvider router={router}/>
+            </SnackbarProvider>
+        </ThemeProvider>
+    </LocalizationProvider>
 )

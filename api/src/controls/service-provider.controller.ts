@@ -60,7 +60,7 @@ export class ServiceProviderController {
                 where: and(
                     eq(serviceProviders.isDeleted, false),
                     eq(serviceProviders.id, id),
-                    !isSuperAdmin ? eq(serviceProviders.createdBy, user.userId) : undefined
+                    // !isSuperAdmin ? eq(serviceProviders.createdBy, user.userId) : undefined
                 ),
                 columns: { isDeleted: false },
                 with: {

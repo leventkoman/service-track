@@ -22,7 +22,7 @@ export class ServiceRequestController {
             const serviceRequest = await db.query.serviceRequests.findMany({
                 where: and(
                     eq(serviceRequests.isDeleted, false),
-                    eq(serviceRequests.serviceProviderId, user.serviceProviderId!),
+                    !isSuperAdmin ? eq(serviceRequests.serviceProviderId, user.serviceProviderId!): undefined,
                 ),
                 columns: {
                     serviceRequestStatusId: false,

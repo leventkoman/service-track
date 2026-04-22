@@ -385,23 +385,43 @@ export class UserController {
     static async resendPasswordMail(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.params.id as string;
-            const findUser = await db.query.verificationTokens.findFirst({
-                where: eq(verificationTokens.userId, userId)
+            const resendMailUser = await db.query.verificationTokens.findFirst({
+                where: eq(verificationTokens.userId, userId),
+                columns: {
+                    id: true
+                },
+                with: {
+                    user: {
+                        columns: {
+                            email: true
+                        },
+                        with: {
+                            userProfile: {
+                                columns: {
+                                    fullName: true
+                                }
+                            }
+                        }
+                    }
+                }
             });
             
-            if (!findUser) {
+            if (!resendMailUser) {
                 return res.status(StatusCodes.NOT_FOUND).send({error: 'Kullanıcı bulunamadı.'});
             }
             
-            const updateToken = await db.update(verificationTokens).set({
+            const [updateToken] = await db.update(verificationTokens).set({
                 token: generatePasswordToken(),
                 userId,
                 expiresAt: set24Hours(),
-            }).where(eq(verificationTokens.userId, userId));
+            }).where(eq(verificationTokens.userId, userId)).returning();
             
-            if (updateToken.rowCount === 0) {
+            if (!updateToken) {
                 return res.status(StatusCodes.NOT_FOUND).json({error: 'Kullanıcı bulunamadı.'})
             }
+            
+            const setupUrl = setupPasswordUrl(updateToken?.token)
+            await mailService(resendMailUser?.user?.email!, 'Hesabınızı aktivite edin', passwordSetupTemplate(resendMailUser?.user?.userProfile?.fullName!, setupUrl));
             
             return res.status(StatusCodes.OK).send();
         } catch (e: any) {

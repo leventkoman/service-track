@@ -15,8 +15,12 @@ import {
 } from "@mui/material";
 import {ArrowBack} from "@mui/icons-material";
 import Divider from "@mui/material/Divider";
+import {useStore} from "@stf/store/use-store.store";
+import {roleMatch} from "@stf/lib/utils";
 
 export default function CreateUserPage() {
+    const loginUser = useStore(s => s.user);
+    const isSuperAdmin = roleMatch(loginUser?.roles, ['super_admin']);
     const defaultValues: CreateUserValues = {
         id: null,
         title: '',
@@ -96,7 +100,7 @@ export default function CreateUserPage() {
                     px: 0
                 }}>
                     <Typography variant="h5" display="flex"  fontWeight="bold">
-                        {userId ? 'Kullanıcı düzenle' : 'Kullanıcı oluştur'}
+                        {userId ? isSuperAdmin ? 'Kullanıcı düzenle' : 'Çalışan düzenle' : isSuperAdmin ? 'Kullanıcı oluştur' : 'Çalışan oluştur'}
                     </Typography>
                     <Box
                         sx={{

@@ -17,11 +17,14 @@ import {
 } from "@mui/material";
 import SearchTextField from "../../compnents/common/SearchTextField";
 import {useNavigate} from "react-router";
-import {convertCustomerType, getCompanyName} from "@stf/lib/utils";
+import {convertCustomerType, getCompanyName, roleMatch} from "@stf/lib/utils";
 import {useSnackbar} from "../../context/SnackbarContext";
 import {CustomerTypeBadge} from "../../compnents/common/CustomerTypeBadge";
+import {useStore} from "@stf/store/use-store.store";
 
 export default function CustomerPage() {
+    const user = useStore(s => s.user);
+    const isSuperAdmin = roleMatch(user?.roles, ['super_admin']);
     const {showSnackbar} = useSnackbar();
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [deleteCustomer, setDeleteCustomer] = useState<Customer | null>(null);
@@ -118,6 +121,7 @@ export default function CustomerPage() {
             sortable: false,
             disableColumnMenu: true,
             align: "right",
+            hideable: !isSuperAdmin,
             renderCell: (params) => (
                 <ActionMenu
                     row={params.row}
@@ -170,10 +174,16 @@ export default function CustomerPage() {
                     px: 1
                 }}>
                     <SearchTextField value={search} onChange={setSearch}/>
-                    <Button startIcon={<Add/>} variant="contained" onClick={() => navigate(`/customers/create`)}>Müşteri oluştur</Button>
+                    { !isSuperAdmin && (
+                        <>
+                            <Button startIcon={<Add/>} variant="contained" onClick={() => navigate(`/customers/create`)}>Müşteri oluştur</Button>
+                        </>
+                    ) }
                 </Box>
                 <DataGrid
-                    
+                    columnVisibilityModel={{
+                        actions: !isSuperAdmin
+                    }}
                     rows={filteredData}
                     columns={columns}
                     initialState={{pagination: {paginationModel}}}
