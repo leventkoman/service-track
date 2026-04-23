@@ -46,6 +46,7 @@ const router = Router();
  */
 router.post('/login', AuthController.login);
 router.post('/logout', AuthController.logout);
-router.post('/setPassword', AuthController.setPassword);
+router.post('/set-password', AuthController.setPassword);
+router.post('/verify-set-password-token', AuthController.verifySetPasswordToken);
 
 export default router;

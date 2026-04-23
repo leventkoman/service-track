@@ -8,7 +8,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import {Business, CurrencyExchange, Dashboard, Diversity3, Group, Handyman} from "@mui/icons-material";
-import {Link, useLocation} from "react-router";
+import {Link, useLocation, useNavigate} from "react-router";
 import {useStore} from "@stf/store/use-store.store";
 import {roleMatch} from "@stf/lib/utils";
 
@@ -19,6 +19,7 @@ interface SidebarLayoutProps {
     onHandleDrawerClose: () => void;
 }
 export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawerClose, onHandleDrawerTransitionEnd}: SidebarLayoutProps) {
+    const navigate = useNavigate();
     const user = useStore(s => s.user);
     const isSPUser = roleMatch(user?.roles, ['admin', 'employee']);
     const menuItems = [
@@ -33,12 +34,13 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
     const drawer = (
         <div>
             <Toolbar sx={{py: 1, paddingLeft: '16px !important'}}>
-                <div className="flex items-center justify-start w-full">
+                <div className="flex items-center justify-start w-full cursor-pointer">
                     <img
                         width="112"
                         src="/logo-primary.png"
                         alt="logo"
                         loading="lazy"
+                        onClick={() => navigate(`/dashboard`)}
                     />
                 </div>
             </Toolbar>

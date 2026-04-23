@@ -41,9 +41,12 @@ async function seed() {
     console.log('✓ roles seeded.');
 
     await db.insert(serviceRequestStatuses).values([
-        { name: 'pending', nameLocalized: 'Beklemede', sortOrder: 1 },
-        { name: 'in_progress', nameLocalized: 'Devam Ediyor', sortOrder: 2 },
-        { name: 'done', nameLocalized: 'Tamamlandı', sortOrder: 3 },
+        { name: 'pending', nameLocalized: 'Beklemede', sortOrder: 0 },
+        { name: 'in_progress', nameLocalized: 'Devam Ediyor', sortOrder: 1 },
+        { name: 'in_workshop', nameLocalized: 'Atolyeye Alınanlar', sortOrder: 2 },
+        { name: 'waiting_parts', nameLocalized: 'Parça Bekleyenler', sortOrder: 3 },
+        { name: 'awaiting_notification', nameLocalized: 'Haber Verecekler', sortOrder: 4 },
+        { name: 'done', nameLocalized: 'Tamamlandı', sortOrder: 5 },
     ]).onConflictDoNothing();
     console.log('✓ service request statuses seeded.');
     

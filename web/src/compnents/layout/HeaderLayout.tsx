@@ -1,20 +1,24 @@
 import AppBar from "@mui/material/AppBar";
-import {Avatar, Box, Menu, MenuItem} from "@mui/material";
+import {Avatar, Box, Menu, MenuItem, Typography} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import React, {useState} from "react";
-import {Logout, Person, Settings} from "@mui/icons-material";
+import {Logout, Person} from "@mui/icons-material";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import {useSnackbar} from "../../context/SnackbarContext";
 import {authService} from "@stf/features/auth/services/auth.service";
 import {useNavigate} from "react-router";
+import {useStore} from "@stf/store/use-store.store";
+import {getFirstLetterFromFullName} from "@stf/lib/utils";
+import Divider from "@mui/material/Divider";
 
 interface HeaderLayoutProps {
     drawerWidth: number;
     onDrawerToggle: () => void;
 }
 export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayoutProps) {
+    const state = useStore();
     const { showSnackbar } = useSnackbar();
     const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -26,11 +30,15 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
         setAnchorEl(null);
     };
     
+    const gotoProfile = () => {
+        navigate(`/users/${state.user?.id}/edit`)
+    }
+    
+    
     const logout = async () => {
         try {
             await authService.logout();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            state.logout();
             navigate("/auth/login");
         } catch (err: any) {
             showSnackbar(err.response?.data?.error ?? 'Çıkış yaparken bir hata ile karşılaşıldı.', "error")
@@ -67,7 +75,7 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
                         aria-haspopup="true"
                         aria-expanded={open ? 'true' : undefined}
                     >
-                        <Avatar sx={{ width: 32, height: 32 }}><Person/></Avatar>
+                        <Avatar sx={{ width: 32, height: 32 }}>{getFirstLetterFromFullName(state?.user?.fullName!)}</Avatar>
                     </IconButton>
                 </Box>
                 <Menu
@@ -79,24 +87,15 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                    <MenuItem onClick={handleClose}>
+                    <Typography display="flex" align="center" justifyContent="center" sx={{px: 2, py: 1, fontSize: 16 }}>
+                        { state.user?.fullName?.toUpperCase() }
+                    </Typography>
+                    <Divider />
+                    <MenuItem onClick={() => gotoProfile()}>
                         <ListItemIcon>
                             <Person fontSize="small" />
                         </ListItemIcon>
                         Hesabım
-                    </MenuItem>
-                    {/*<Divider />*/}
-                    {/*<MenuItem onClick={handleClose}>*/}
-                    {/*    <ListItemIcon>*/}
-                    {/*        <PersonAdd fontSize="small" />*/}
-                    {/*    </ListItemIcon>*/}
-                    {/*    Add another account*/}
-                    {/*</MenuItem>*/}
-                    <MenuItem onClick={handleClose}>
-                        <ListItemIcon>
-                            <Settings fontSize="small" />
-                        </ListItemIcon>
-                        Ayarlar
                     </MenuItem>
                     <MenuItem onClick={() => logout()}>
                         <ListItemIcon>

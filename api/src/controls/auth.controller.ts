@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import {db} from "../db";
 import {users, userStatuses, verificationTokens} from "../db/schema";
-import {and, eq, gt} from "drizzle-orm";
+import {and, eq, gt, lt} from "drizzle-orm";
 import {StatusCodes} from "../enums/status-codes.enum";
 import {comparePassword, generateToken, hashPassword, userProfileFields} from "../helpers/utils";
 import type {LoginUser} from "@sts/models/login-user";
@@ -95,12 +95,13 @@ export class AuthController {
 
     static async setPassword(req: Request, res: Response, next: NextFunction) {
         try {
-            const { token, password } = req.body;
+            const { token, password, userId } = req.body;
             const now = new Date();
 
             const findToken = await db.query.verificationTokens.findFirst({
                 where: and(
                     eq(verificationTokens.token, token),
+                    eq(verificationTokens.userId, userId),
                     eq(verificationTokens.isUsed, false),
                     gt(verificationTokens.expiresAt, now)
                 )
@@ -128,6 +129,29 @@ export class AuthController {
 
             return res.status(StatusCodes.OK).send({message: 'Şifre başarılı bir şekilde oluşturuldu.'});
         } catch (e: any) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e});
+        }
+    }
+    
+    static async verifySetPasswordToken(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId, token } = req.body;
+            const now = new Date();
+            const isAccessToken = await db.query.verificationTokens.findFirst({
+                where: and(
+                    eq(verificationTokens.token, token),
+                    eq(verificationTokens.userId, userId),
+                    eq(verificationTokens.isUsed, false),
+                    gt(verificationTokens.expiresAt, now)
+                )
+            });
+            
+            if (!isAccessToken) {
+                return res.status(StatusCodes.NOT_FOUND).send({error: 'Token geçerli değil veya süresi bitmiş.'})
+            }
+            
+            return res.status(StatusCodes.OK).send()
+        } catch (e) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e});
         }
     }

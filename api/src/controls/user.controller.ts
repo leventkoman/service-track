@@ -197,6 +197,7 @@ export class UserController {
             });
             if (!roleIds.length) return res.status(StatusCodes.BAD_REQUEST).json({error: 'Geçersiz rol.'});
             let passwordToken = '';
+            let newUserId = '';
             const pendingStatus = await db.query.userStatuses.findFirst({
                 where: eq(userStatuses.name, UserStatus.PENDING),
                 columns: {id: true}
@@ -237,8 +238,10 @@ export class UserController {
                 }
 
                 const token = generatePasswordToken();
+                
                 passwordToken = token;
-
+                newUserId = newUser.id;
+                
                 await trx.insert(verificationTokens).values({
                     token,
                     userId: newUser.id,
@@ -246,7 +249,7 @@ export class UserController {
                 });
             });
 
-            const setupUrl = setupPasswordUrl(passwordToken)
+            const setupUrl = setupPasswordUrl(newUserId, passwordToken)
             await mailService(email, 'Hesabınızı aktivite edin', passwordSetupTemplate(fullName, setupUrl));
 
             return res.status(StatusCodes.CREATED).json({message: 'Kullanıcı başarılı bir şekide oluşturuldu.'});
@@ -420,7 +423,7 @@ export class UserController {
                 return res.status(StatusCodes.NOT_FOUND).json({error: 'Kullanıcı bulunamadı.'})
             }
             
-            const setupUrl = setupPasswordUrl(updateToken?.token)
+            const setupUrl = setupPasswordUrl(updateToken?.userId!, updateToken?.token)
             await mailService(resendMailUser?.user?.email!, 'Hesabınızı aktivite edin', passwordSetupTemplate(resendMailUser?.user?.userProfile?.fullName!, setupUrl));
             
             return res.status(StatusCodes.OK).send();

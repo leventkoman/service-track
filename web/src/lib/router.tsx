@@ -10,7 +10,7 @@ import {
     DashboardPage,
     LoginPage,
     ServiceProviderPage,
-    ServiceRequestPage, SubscriptionsPage,
+    ServiceRequestPage, SetPasswordPage, SubscriptionsPage,
     UserPage
 } from "../pages";
 import TableSkeleton from "../compnents/common/skletons/TableSkeleton";
@@ -39,7 +39,11 @@ export const router = createBrowserRouter([
             {
                 path: 'login',
                 element: (withSuspense(LoginPage))
-            }   
+            },
+            {
+                path: 'set-password',
+                element: (withSuspense(SetPasswordPage))
+            }
         ]
     },
     {

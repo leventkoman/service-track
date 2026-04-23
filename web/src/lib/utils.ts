@@ -31,3 +31,8 @@ export function roleMatch(userRoles: string[] | undefined, roles: string[] | und
     if (!userRoles || !roles) return ;
     return roles.some(r => userRoles.includes(r))
 }
+
+export function getFirstLetterFromFullName(fullName: string) {
+    if (!fullName) return '?';
+    return fullName.slice(0, 1).toUpperCase();
+}

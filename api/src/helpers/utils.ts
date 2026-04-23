@@ -59,8 +59,8 @@ export function generatePasswordToken(): string {
     return crypto.pseudoRandomBytes(32).toString('hex');
 }
 
-export function setupPasswordUrl(passwordToken: string): string {
-    return `${process.env.FRONTEND_URL}/auth/set-password?token=${passwordToken}`;
+export function setupPasswordUrl(userId: string, passwordToken: string): string {
+    return `${process.env.FRONTEND_URL}/auth/set-password?userId=${userId}&token=${passwordToken}`;
     
 }
 

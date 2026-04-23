@@ -43,8 +43,6 @@ export default function LoginPage() {
     }
     
     useEffect(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
         state.logout();
     }, [])
 

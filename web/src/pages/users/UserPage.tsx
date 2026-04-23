@@ -153,6 +153,7 @@ export default function UserPage() {
                         },
                         {
                             label: 'Düzenle',
+                            // hidden: (!isAdmin || !isSuperAdmin) && loginUser?.id !== params.row.id,
                             icon: <Edit fontSize="small"/>,
                             onClick: (row) => navigate(`/users/${row.id}/edit`),
                         },
