@@ -13,7 +13,17 @@ export const setPasswordSchema = z.object({
     .refine((p) => p.password === p.confirmPassword, {
     message: 'Şifreler eşleşmiyor',
     path: ['confirmPassword']
+});
+
+export const changePasswordSchema = z.object({
+    currentPassword: passwordSchema,
+    newPassword: passwordSchema,
+    confirmNewPassword: passwordSchema
+}).refine((p) => p.newPassword === p.confirmNewPassword, {
+    message: 'Şifreler eşleşmiyor',
+    path: ['confirmNewPassword']
 })
 
 export type LoginValues = z.infer<typeof loginSchema>;
 export type SetPasswordValues = z.infer<typeof setPasswordSchema>;
+export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;

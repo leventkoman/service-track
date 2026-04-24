@@ -52,7 +52,6 @@ export default function DashboardPage() {
     useEffect(() => {
         (async () => {
             await fetchData();
-            console.log(data)
         })();
     }, []);
     

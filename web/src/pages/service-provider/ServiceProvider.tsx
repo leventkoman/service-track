@@ -427,7 +427,6 @@ export default function ServiceProviderPage() {
                     <Button variant="contained" color="error" onClick={() => onDelete()}>Sil</Button>
                 </DialogActions>
             </Dialog>
-
         </div>
     )
 }

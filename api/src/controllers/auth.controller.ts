@@ -7,6 +7,7 @@ import {comparePassword, generateToken, hashPassword, userProfileFields} from ".
 import type {LoginUser} from "@sts/models/login-user";
 import type {LoginResponse} from "@sts/models/login-response";
 import {UserStatus} from "../enums/user-status.enum";
+import bcrypt from "bcrypt";
 
 export class AuthController {
     static async login(req: Request, res: Response, next: NextFunction) {
@@ -149,6 +150,34 @@ export class AuthController {
             if (!isAccessToken) {
                 return res.status(StatusCodes.NOT_FOUND).send({error: 'Token geçerli değil veya süresi bitmiş.'})
             }
+            
+            return res.status(StatusCodes.OK).send()
+        } catch (e) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: e});
+        }
+    }
+    
+    static async changePassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { currentPassword, newPassword } = req.body;
+            const userId = req.user?.userId!;
+            const user = await db.query.users.findFirst({
+                where: eq(users.id, userId),
+                columns: {
+                    passwordHash: true
+                }
+            });
+            const isMatch = await comparePassword(currentPassword, user?.passwordHash!);
+            if (!isMatch) {
+                return res.status(StatusCodes.BAD_REQUEST).json({error: "Mevcut şifre yanlış."})
+            }
+            if (currentPassword === newPassword) {
+                return res.status(StatusCodes.BAD_REQUEST).json({error: "Mevcut şifre ile yeni şijre aynı olamaz. Farklı bir şifre giriniz."})
+            }
+            
+            await db.update(users).set({
+                passwordHash: await hashPassword(newPassword),
+            }).where(eq(users.id, userId))
             
             return res.status(StatusCodes.OK).send()
         } catch (e) {
