@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {UnitController} from "../controls/unit.controller";
+import {UnitController} from "../controllers/unit.controller";
 import {roleMatch} from "../helpers/utils";
 import {authorize} from "../middlewares/authorize";
 import {Role} from "../enums/role.enum";

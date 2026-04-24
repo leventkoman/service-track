@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {ServiceProviderController} from "../controls/service-provider.controller";
+import {ServiceProviderController} from "../controllers/service-provider.controller";
 import {authenticate} from "../middlewares/authenticate";
 import {authorize} from "../middlewares/authorize";
 import {Role} from "../enums/role.enum";

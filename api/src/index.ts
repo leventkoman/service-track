@@ -14,6 +14,7 @@ import unitRoute from "./routes/unit.route";
 import vatRateRoute from "./routes/vat-rate.route";
 import subscriptionRoute from "./routes/subscription.route";
 import startScheduler from "./jobs/scheduler";
+import dashboardRoute from "./routes/dashboard.route";
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -31,6 +32,7 @@ startScheduler();
 
 app.use('/api/auth', authRoute);
 app.use('/api/customers', authenticate, customerRoute);
+app.use('/api/dashboard', authenticate, dashboardRoute);
 app.use('/api/serviceProviders', authenticate, serviceProviderRoute);
 app.use('/api/serviceRequests', authenticate, serviceRequestRoute);
 app.use('/api/serviceRequestStatuses', authenticate, serviceRequestStatusRoute);

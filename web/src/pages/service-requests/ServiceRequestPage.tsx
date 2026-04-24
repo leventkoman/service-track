@@ -90,7 +90,15 @@ export default function ServiceRequestPage() {
     }, [])
 
     const columns: GridColDef[] = [
-        {field: 'serviceNumber', headerName: 'Servis Numarası', flex: 1, resizable: false, minWidth: 180},
+        {
+            field: 'serviceNumber', headerName: 'Servis Numarası', flex: 1, resizable: false, minWidth: 180,
+            renderHeader: (params) => (
+                <div>
+                    <span className="pr-1">{params.colDef.headerName}</span>
+                    (<span className="text-gray-500">{data.length}</span>)
+                </div>
+            )
+        },
         {
             field: 'customer', headerName: 'Müşteri', flex: 1, resizable: false, minWidth: 200,
             valueGetter: (_, row: ServiceRequest) => `${row.customer.fullName || ''}`,

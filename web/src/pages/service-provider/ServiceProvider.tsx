@@ -155,7 +155,15 @@ export default function ServiceProviderPage() {
     }
 
     const columns: GridColDef[] = [
-        {field: 'companyName', headerName: 'Firma Adı', flex: 1, resizable: false, minWidth: 200},
+        {
+            field: 'companyName', headerName: 'Firma Adı', flex: 1, resizable: false, minWidth: 200,
+            renderHeader: (params) => (
+                <div>
+                    <span className="pr-1">{params.colDef.headerName}</span>
+                    (<span className="text-gray-500">{data.length}</span>)
+                </div>
+            )
+        },
         {field: 'taxNumber', headerName: 'Vergi Numarası', flex: 1, resizable: false, minWidth: 200},
         {field: 'phone', headerName: 'Telefon', flex: 1, resizable: false, minWidth: 200},
         {field: 'email', headerName: 'Email', flex: 1, resizable: false, minWidth: 200},

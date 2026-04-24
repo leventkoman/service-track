@@ -41,13 +41,13 @@ export default function CustomerPage() {
 
     const onDelete = async () => {
         if (!deleteCustomer?.id) return;
-        
+
         const controller = new AbortController();
         controllerRef.current = controller;
-        
+
         setLoading(true);
         setOpenDialog(false);
-        
+
         try {
             await CustomerService.deleteCustomer(deleteCustomer.id, controller.signal);
             showSnackbar(`${deleteCustomer.fullName} silme işlemi başarılı.`);
@@ -64,7 +64,7 @@ export default function CustomerPage() {
         const controller = new AbortController();
         controllerRef.current = controller;
         setLoading(true);
-        
+
         try {
             const response = await CustomerService.getCustomers(controller.signal);
             setData(response.data);
@@ -80,15 +80,23 @@ export default function CustomerPage() {
         (async () => {
             await fetchData();
         })();
-        
+
         return () => {
             controllerRef.current?.abort();
         }
-        
+
     }, []);
 
     const columns: GridColDef[] = [
-        {field: 'vatNumber', headerName: 'Vergi Numarası', flex: 1, resizable: false, minWidth: 200},
+        {
+            field: 'vatNumber', headerName: 'Vergi Numarası', flex: 1, resizable: false, minWidth: 200,
+            renderHeader: (params) => (
+                <div>
+                    <span className="pr-1">{params.colDef.headerName}</span>
+                    (<span className="text-gray-500">{data.length}</span>)
+                </div>
+            )
+        },
         {field: 'fullName', headerName: 'Ad soyad', flex: 1, resizable: false, minWidth: 200},
         {
             field: 'customerType', headerName: 'Müşteri Tipi', flex: 1, resizable: false, minWidth: 200,
@@ -193,8 +201,8 @@ export default function CustomerPage() {
                     loading={loading}
                 />
             </Paper>
-            
-            
+
+
             <Dialog open={openDialog}>
                 <DialogTitle>Müşteri sil</DialogTitle>
                 <IconButton

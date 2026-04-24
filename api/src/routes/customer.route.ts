@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {CustomerController} from "../controls/customer.controller";
+import {CustomerController} from "../controllers/customer.controller";
 import {authenticate} from "../middlewares/authenticate";
 import {authorize} from "../middlewares/authorize";
 import {Role} from "../enums/role.enum";

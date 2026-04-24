@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {SubscriptionController} from "../controls/subscription.controller";
+import {SubscriptionController} from "../controllers/subscription.controller";
 import {authorize} from "../middlewares/authorize";
 import {Role} from "../enums/role.enum";
 

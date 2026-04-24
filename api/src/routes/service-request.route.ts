@@ -1,7 +1,7 @@
 import {Router} from "express";
 import {authorize} from "../middlewares/authorize";
 import {Role} from "../enums/role.enum";
-import {ServiceRequestController} from "../controls/service-request.controller";
+import {ServiceRequestController} from "../controllers/service-request.controller";
 
 const router = Router();
 

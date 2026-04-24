@@ -101,6 +101,12 @@ export default function SubscriptionsPage() {
     const columns: GridColDef[] = [
         {
             field: 'companyName', headerName: 'Firma', flex: 1, resizable: false, minWidth: 200,
+            renderHeader: (params) => (
+                <div>
+                    <span className="pr-1">{params.colDef.headerName}</span>
+                    (<span className="text-gray-500">{data.length}</span>)
+                </div>
+            ),
             valueGetter: (_, row: Subscription) => `${row.serviceProvider.companyName}`,
         },
         {

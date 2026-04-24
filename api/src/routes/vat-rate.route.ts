@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {VatRateController} from "../controls/vat-rate.controller";
+import {VatRateController} from "../controllers/vat-rate.controller";
 import {authorize} from "../middlewares/authorize";
 import {Role} from "../enums/role.enum";
 

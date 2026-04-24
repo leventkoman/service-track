@@ -18,17 +18,23 @@ interface SidebarLayoutProps {
     onHandleDrawerTransitionEnd: () => void;
     onHandleDrawerClose: () => void;
 }
-export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawerClose, onHandleDrawerTransitionEnd}: SidebarLayoutProps) {
+
+export default function SidebarLayout({
+                                          drawerWidth,
+                                          isMobileOpen,
+                                          onHandleDrawerClose,
+                                          onHandleDrawerTransitionEnd
+                                      }: SidebarLayoutProps) {
     const navigate = useNavigate();
     const user = useStore(s => s.user);
     const isSPUser = roleMatch(user?.roles, ['admin', 'employee']);
     const menuItems = [
-        {text: 'Anasayfa', icon: <Dashboard />, path: '/dashboard'},
-        {text: isSPUser ? 'Firma': 'Firmalar', icon: <Business />, path: '/service-providers'},
-        {text: 'Müşteriler', icon: <Diversity3 />, path: '/customers'},
-        {text: isSPUser ? 'Çalışanlar' : 'Kullanıcılar', icon: <Group />, path: '/users'}, 
-        {text: 'Service Kayıtları', icon: <Handyman />, path: '/service-requests'},
-        {text: 'Üyelikler', hidden: isSPUser, icon: <CurrencyExchange />, path: '/subscriptions'},
+        {text: 'Anasayfa', icon: <Dashboard/>, path: '/dashboard'},
+        {text: isSPUser ? 'Firma' : 'Firmalar', icon: <Business/>, path: '/service-providers'},
+        {text: 'Müşteriler', icon: <Diversity3/>, path: '/customers'},
+        {text: isSPUser ? 'Çalışanlar' : 'Kullanıcılar', icon: <Group/>, path: '/users'},
+        {text: 'Service Kayıtları', icon: <Handyman/>, path: '/service-requests'},
+        {text: 'Üyelikler', hidden: isSPUser, icon: <CurrencyExchange/>, path: '/subscriptions'},
     ];
     const location = useLocation();
     const drawer = (
@@ -46,7 +52,7 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
             </Toolbar>
             <Divider/>
             {/*<Divider/>*/}
-            <List>
+            <List sx={{ px: 2 }}>
                 {menuItems.map((item) => (
                     <ListItem key={item.path} disablePadding>
                         <ListItemButton
@@ -55,22 +61,26 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
                             selected={location.pathname.includes(item.path)}
                             hidden={item?.hidden}
                             sx={{
+                                borderRadius: 1.5,
                                 "&.Mui-selected": {
                                     backgroundColor: "#e3f2fd",
                                 },
+                                "&.MuiListItemButton-root": {
+                                    py: "8px",
+                                }
                             }}
                         >
-                            <ListItemIcon sx={{ mr: -2 }}>
+                            <ListItemIcon sx={{mr: -2}}>
                                 {item.icon}
                             </ListItemIcon>
-                            <ListItemText primary={item.text} />
+                            <ListItemText primary={item.text}/>
                         </ListItemButton>
                     </ListItem>
                 ))}
             </List>
         </div>
     )
-    
+
     return (
         <>
             <Box
@@ -98,6 +108,7 @@ export default function SidebarLayout({drawerWidth, isMobileOpen, onHandleDrawer
                 <Drawer
                     variant="permanent"
                     sx={{
+                        borderRadius: 1.5,
                         display: {xs: 'none', sm: 'block'},
                         '& .MuiDrawer-paper': {boxSizing: 'border-box', width: drawerWidth},
                     }}

@@ -21,6 +21,7 @@ import {formatDateTimeToDMYHM, getRoles, roleMatch} from "@stf/lib/utils";
 import {useSnackbar} from "../../context/SnackbarContext";
 import StatusBadge from "../../compnents/common/StatusBadge";
 import {useStore} from "@stf/store/use-store.store";
+import {UserStatus} from "api/src/enums/user-status.enum";
 
 export default function UserPage() {
     const loginUser = useStore(s => s.user);
@@ -106,7 +107,15 @@ export default function UserPage() {
     }, []);
 
     const columns: GridColDef[] = [
-        {field: 'fullName', headerName: 'Ad soyad', flex: 1, resizable: false, minWidth: 200},
+        {
+            field: 'fullName', headerName: 'Ad soyad', flex: 1, resizable: false, minWidth: 200,
+            renderHeader: (params) => (
+                <div>
+                    <span className="pr-1">{params.colDef.headerName}</span>
+                    (<span className="text-gray-500">{data.length}</span>)
+                </div>
+            )
+        },
         {field: 'title', headerName: 'Unvan', flex: 1, resizable: false, minWidth: 200},
         {
             field: 'roles', headerName: 'Roller', flex: 1, resizable: false, minWidth: 200,
@@ -146,8 +155,8 @@ export default function UserPage() {
                     row={params.row}
                     items={[
                         {
-                            hidden: params.row.lastLoginTime,
-                            label: 'Mail gönder',
+                            hidden: params.row.lastLoginTime || params.row.status.name.trim() === UserStatus.ACTIVE,
+                            label: "Tekrar mail gönder",
                             icon: <Repeat fontSize="small"/>,
                             onClick: (row: UserProfile) => resendEmail(row),
                         },

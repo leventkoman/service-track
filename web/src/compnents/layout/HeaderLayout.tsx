@@ -87,8 +87,11 @@ export default function HeaderLayout({drawerWidth, onDrawerToggle}: HeaderLayout
                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                    <Typography display="flex" align="center" justifyContent="center" sx={{px: 2, py: 1, fontSize: 16 }}>
+                    <Typography display="flex" align="center" justifyContent="center" sx={{px: 2, fontSize: 16 }}>
                         { state.user?.fullName?.toUpperCase() }
+                    </Typography>
+                    <Typography display="flex" align="center" justifyContent="center" sx={{px: 2, py: 1, fontSize: 16 }}>
+                        { state.user?.email }
                     </Typography>
                     <Divider />
                     <MenuItem onClick={() => gotoProfile()}>
